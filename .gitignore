@@ -1,0 +1,8 @@
+.next/
+node_modules/
+.env.local
+.env
+*.pfx
+*.p12
+dist/
+.DS_Store
