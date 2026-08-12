@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Shield, Heart, Mail, Phone, MapPin } from "lucide-react";
+import { Sparkles, Shield, Mail, Phone, MapPin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -26,11 +26,31 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">CA-OS Platform</h4>
             <ul className="space-y-2.5 text-xs">
-              <li><Link href="/gstr3b" className="hover:text-white transition">GSTR-3B AI Auto-Filler</Link></li>
-              <li><Link href="/litigation" className="hover:text-white transition">Litigation SLA Tracker</Link></li>
-              <li><Link href="/tds-reconcile" className="hover:text-white transition">Form 26AS & AIS Reconciler</Link></li>
-              <li><Link href="/billing" className="hover:text-white transition">SAC 9982 Invoicing & UPI</Link></li>
-              <li><Link href="/gstr9-audit" className="hover:text-white transition">GSTR-9/9C Annual Audit</Link></li>
+              <li>
+                <Link href="/gstr3b" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  GSTR-3B AI Auto-Filler
+                </Link>
+              </li>
+              <li>
+                <Link href="/litigation" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Litigation SLA Tracker
+                </Link>
+              </li>
+              <li>
+                <Link href="/tds-reconcile" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Form 26AS & AIS Reconciler
+                </Link>
+              </li>
+              <li>
+                <Link href="/billing" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  SAC 9982 Invoicing & UPI
+                </Link>
+              </li>
+              <li>
+                <Link href="/gstr9-audit" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  GSTR-9/9C Annual Audit
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -38,11 +58,31 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Company</h4>
             <ul className="space-y-2.5 text-xs">
-              <li><Link href="/about" className="hover:text-white transition">About Us</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition">Pricing Plans</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition">Contact & Demo</Link></li>
-              <li><Link href="/settings" className="hover:text-white transition">Team Invite OS</Link></li>
-              <li><Link href="/login" className="hover:text-white transition">Sign In to Firm Portal</Link></li>
+              <li>
+                <Link href="/about" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Pricing Plans
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Contact & Demo
+                </Link>
+              </li>
+              <li>
+                <Link href="/settings" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Team Invite OS
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-ink-300 hover:text-brand-300 font-medium transition-colors hover:underline underline-offset-4">
+                  Sign In to Firm Portal
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -65,9 +105,15 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink-500">
           <p>© {new Date().getFullYear()} GSTGenius Inc. Built for Indian Chartered Accountant Practices.</p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-ink-300 transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-ink-300 transition">Terms of Service</Link>
-            <Link href="/security" className="hover:text-ink-300 transition">Security & RLS</Link>
+            <Link href="/privacy" className="text-ink-400 hover:text-brand-300 transition-colors hover:underline underline-offset-4">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-ink-400 hover:text-brand-300 transition-colors hover:underline underline-offset-4">
+              Terms of Service
+            </Link>
+            <Link href="/security" className="text-ink-400 hover:text-brand-300 transition-colors hover:underline underline-offset-4">
+              Security & RLS
+            </Link>
           </div>
         </div>
       </div>
