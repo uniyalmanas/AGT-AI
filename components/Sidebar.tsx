@@ -3,21 +3,24 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, GitMerge,
-  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert, CreditCard,
+  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert, CreditCard, GitCompare, FileCheck, Globe,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
-  { href: "/dashboard",  icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/tasks",      icon: CheckSquare,     label: "Compliance Tasks" },
-  { href: "/litigation", icon: ShieldAlert,     label: "Litigation Tracker" },
-  { href: "/billing",    icon: CreditCard,      label: "Firm Billing & Profit" },
-  { href: "/clients",    icon: Users,            label: "Clients" },
-  { href: "/gstr3b",     icon: FileText,         label: "GSTR-3B Filler" },
-  { href: "/reconcile",  icon: GitMerge,         label: "Reconciliation" },
-  { href: "/notices",    icon: AlertCircle,      label: "Notice Reader" },
-  { href: "/copilot",    icon: Scale,            label: "GST Law Copilot" },
-  { href: "/vault",      icon: Vault,            label: "Client Vault" },
+  { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/tasks",         icon: CheckSquare,     label: "Compliance Tasks" },
+  { href: "/litigation",    icon: ShieldAlert,     label: "Litigation Tracker" },
+  { href: "/billing",       icon: CreditCard,      label: "Firm Billing & Profit" },
+  { href: "/tds-reconcile", icon: GitCompare,      label: "TDS 26AS/AIS Checker" },
+  { href: "/gstr9-audit",   icon: FileCheck,       label: "GSTR-9/9C Audit" },
+  { href: "/client-portal", icon: Globe,           label: "Client Portal" },
+  { href: "/clients",       icon: Users,            label: "Clients" },
+  { href: "/gstr3b",        icon: FileText,         label: "GSTR-3B Filler" },
+  { href: "/reconcile",     icon: GitMerge,         label: "Reconciliation" },
+  { href: "/notices",       icon: AlertCircle,      label: "Notice Reader" },
+  { href: "/copilot",       icon: Scale,            label: "GST Law Copilot" },
+  { href: "/vault",         icon: Vault,            label: "Client Vault" },
 ];
 
 export default function Sidebar() {
