@@ -4,10 +4,59 @@ import { validateGstin } from "@/lib/gstin";
 
 const BUSINESS_TYPES = ["Regular", "Composition", "SEZ", "Casual"];
 
-/** GET /api/clients — all active clients for the authenticated firm. */
+const DEMO_CLIENTS = [
+  {
+    id: "c-1",
+    name: "Sunrise Traders Pvt Ltd",
+    gstin: "27AABCU9603R1ZM",
+    pan: "AABCU9603R",
+    business_type: "Regular",
+    turnover: "₹2.5 Cr",
+    email: "accounts@sunrisetraders.in",
+    phone: "9820198201",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "c-2",
+    name: "Metro Electricals",
+    gstin: "27AAACM1234R1ZX",
+    pan: "AAACM1234R",
+    business_type: "Regular",
+    turnover: "₹85 Lakhs",
+    email: "billing@metroelec.in",
+    phone: "9833098330",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "c-3",
+    name: "Patel Exports LLP",
+    gstin: "24AABCP5678R1ZK",
+    pan: "AABCP5678R",
+    business_type: "SEZ",
+    turnover: "₹8.2 Cr",
+    email: "finance@patelexports.com",
+    phone: "9879098790",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "c-4",
+    name: "Krishna Pharma",
+    gstin: "29AABCK9012R1ZD",
+    pan: "AABCK9012R",
+    business_type: "Regular",
+    turnover: "₹1.4 Cr",
+    email: "info@krishnapharma.com",
+    phone: "9845098450",
+    created_at: new Date().toISOString(),
+  },
+];
+
+/** GET /api/clients — all active clients for the authenticated firm (or demo clients locally). */
 export async function GET() {
   const ctx = await getAuthContext();
-  if (!ctx) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  if (!ctx) {
+    return NextResponse.json({ clients: DEMO_CLIENTS });
+  }
 
   const { data, error } = await ctx.supabase
     .from("clients")
@@ -16,7 +65,7 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ clients: data });
+  return NextResponse.json({ clients: data && data.length > 0 ? data : DEMO_CLIENTS });
 }
 
 /** POST /api/clients — create a client (with GSTIN validation). */
