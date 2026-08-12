@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, GitMerge,
-  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert, CreditCard, GitCompare, FileCheck, Globe, Menu, X,
+  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert, CreditCard, GitCompare, FileCheck, Globe, Menu, X, UserCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/tasks",         icon: CheckSquare,     label: "Compliance Tasks" },
   { href: "/litigation",    icon: ShieldAlert,     label: "Litigation Tracker" },
   { href: "/billing",       icon: CreditCard,      label: "Firm Billing & Profit" },
+  { href: "/settings",      icon: UserCheck,       label: "Team & Staff Invites" },
   { href: "/tds-reconcile", icon: GitCompare,      label: "TDS 26AS/AIS Checker" },
   { href: "/gstr9-audit",   icon: FileCheck,       label: "GSTR-9/9C Audit" },
   { href: "/client-portal", icon: Globe,           label: "Client Portal" },
