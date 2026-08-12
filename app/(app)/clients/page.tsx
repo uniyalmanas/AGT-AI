@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Users, Search, Plus, FileText, GitMerge, AlertCircle,
-  Pencil, Trash2, X, Loader2,
+  Pencil, Trash2, X, Loader2, MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { validateGstin } from "@/lib/gstin";
+import { ClientReminderModal } from "@/components/ClientReminderModal";
 
 interface Client {
   id: string;
@@ -41,6 +42,7 @@ export default function ClientsPage() {
 
   // Modal state
   const [open, setOpen] = useState(false);
+  const [selectedReminderClient, setSelectedReminderClient] = useState<Client | null>(null);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [form, setForm] = useState<Form>(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -206,6 +208,13 @@ export default function ClientsPage() {
                   <td className="table-cell text-ink-500">{c.turnover || "—"}</td>
                   <td className="table-cell">
                     <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setSelectedReminderClient(c)}
+                        className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 transition-colors"
+                        title="Send WhatsApp Data Reminder"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
                       <Link href="/gstr3b" className="p-1.5 rounded-lg hover:bg-ink-50 text-ink-300 hover:text-brand-600 transition-colors" title="File GSTR-3B">
                         <FileText size={14} />
                       </Link>
@@ -315,6 +324,16 @@ export default function ClientsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {selectedReminderClient && (
+        <ClientReminderModal
+          isOpen={!!selectedReminderClient}
+          onClose={() => setSelectedReminderClient(null)}
+          clientName={selectedReminderClient.name}
+          clientPhone={selectedReminderClient.phone || ""}
+          gstin={selectedReminderClient.gstin}
+        />
       )}
     </div>
   );
