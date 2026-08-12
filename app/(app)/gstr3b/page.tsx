@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Sparkles, FileText, AlertTriangle, CheckCircle2, Info, RotateCcw, ExternalLink, Upload, AlignLeft } from "lucide-react";
+import { Sparkles, FileText, AlertTriangle, CheckCircle2, Info, RotateCcw, ExternalLink, Upload, AlignLeft, Download } from "lucide-react";
 import { FileUploadZone } from "@/components/FileUploadZone";
 
 interface FilledData {
@@ -258,14 +258,34 @@ export default function GSTR3BPage() {
                 </p>
                 <p className="text-xs text-brand-400 mt-1">CGST + SGST + IGST + interest + late fee</p>
               </div>
-              <a
-                href="https://www.gst.gov.in"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary"
-              >
-                <ExternalLink size={14} /> File on GST Portal
-              </a>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={async () => {
+                    const res = await fetch("/api/export-json", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(data),
+                    });
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `GSTR3B_${data.gstin || "FILING"}.json`;
+                    a.click();
+                  }}
+                  className="btn-secondary"
+                >
+                  <Download size={14} className="text-brand-600" /> Download GSTN JSON
+                </button>
+                <a
+                  href="https://www.gst.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  <ExternalLink size={14} /> File on GST Portal
+                </a>
+              </div>
             </div>
           </div>
         </div>
