@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logAuditEvent } from "@/lib/audit";
 import { ComplianceTask } from "@/app/api/tasks/route";
+import { addTasksToStore } from "@/lib/tasks-store";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,16 +11,17 @@ export async function POST(req: NextRequest) {
     const targetClient = clientName || "Sunrise Traders Pvt Ltd";
     const targetGstin = gstin || "27AABCU9603R1ZM";
     const targetPeriod = period || "March 2026";
+    const isComposition = businessType === "Composition";
 
-    // Auto-generate 4 statutory compliance tasks based on entity rules
+    // Dynamic statutory task rules based on entity & business type
     const generatedTasks: ComplianceTask[] = [
       {
         id: `auto-${Date.now()}-1`,
         clientName: targetClient,
         gstin: targetGstin,
-        taskType: "GSTR-1",
+        taskType: isComposition ? "GSTR-3B" : "GSTR-1",
         period: targetPeriod,
-        dueDate: "11 Apr 2026",
+        dueDate: isComposition ? "18 Apr 2026" : "11 Apr 2026",
         assignedStaff: "Rahul Sharma (Article Clerk)",
         makerChecker: "Rahul (Maker) → CA Sharma (Checker)",
         status: "pending_data",
@@ -63,19 +65,23 @@ export async function POST(req: NextRequest) {
       },
     ];
 
+    // WRITE DIRECTLY INTO LIVE TASKS STORE
+    const updatedTasksStore = addTasksToStore(generatedTasks);
+
     logAuditEvent({
-      actorName: "Auto-Task Engine",
+      actorName: "Intelligent Task Engine",
       actorRole: "partner",
-      action: "Statutory Tasks Generated",
+      action: "Tasks Created in Task OS",
       entityType: "task",
       entityId: generatedTasks[0].id,
-      details: `Auto-generated ${generatedTasks.length} statutory compliance tasks for ${targetClient} (${targetPeriod})`,
+      details: `Generated and persisted ${generatedTasks.length} statutory tasks into Task OS for ${targetClient} (${targetPeriod})`,
     });
 
     return NextResponse.json({
       ok: true,
-      message: `Generated ${generatedTasks.length} statutory tasks for ${targetClient}`,
+      message: `Generated and stored ${generatedTasks.length} statutory tasks for ${targetClient}`,
       generatedTasks,
+      totalTasksInStore: updatedTasksStore.length,
     });
   } catch (e) {
     return NextResponse.json({ error: "Task generation failed" }, { status: 500 });

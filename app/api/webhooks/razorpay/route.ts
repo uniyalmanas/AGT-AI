@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { logAuditEvent } from "@/lib/audit";
+import { markInvoiceAsPaid } from "@/lib/billing-store";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,6 +24,11 @@ export async function POST(req: NextRequest) {
       email: "client@sunrisetraders.in",
     };
 
+    const targetInvoiceId = payload.invoiceId || payload.invoice_id;
+
+    // Mutate live invoice status to "paid" in billing store
+    const updatedInvoice = markInvoiceAsPaid(targetInvoiceId);
+
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "default_webhook_secret";
 
     // HMAC Signature Verification if signature header provided
@@ -37,25 +43,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const amountInRupees = (paymentEntity.amount || 1500000) / 100;
+    const amountInRupees = updatedInvoice ? updatedInvoice.totalAmount : (paymentEntity.amount || 1500000) / 100;
     const paymentId = paymentEntity.id || "pay_mock123";
 
     logAuditEvent({
-      actorName: "Razorpay Webhook",
+      actorName: "Razorpay Webhook Engine",
       actorRole: "partner",
-      action: "Payment Captured",
+      action: "Payment Captured & Invoice Updated",
       entityType: "invoice",
-      entityId: paymentId,
-      details: `Live payment of ₹${amountInRupees.toLocaleString("en-IN")} captured via Razorpay (${paymentEntity.method || "UPI"}) for SAC 9982 Invoice`,
+      entityId: updatedInvoice?.id || paymentId,
+      details: `Live payment of ₹${amountInRupees.toLocaleString("en-IN")} captured for Invoice #${updatedInvoice?.invoiceNumber || "INV-2026-001"}. Marked PAID.`,
     });
 
     return NextResponse.json({
       received: true,
       event,
       paymentId,
+      invoiceNumber: updatedInvoice?.invoiceNumber,
       amountRupees: amountInRupees,
       status: "paid",
-      receiptMessage: `Payment of ₹${amountInRupees.toLocaleString("en-IN")} confirmed. SAC 9982 tax invoice marked PAID.`,
+      receiptMessage: `Invoice #${updatedInvoice?.invoiceNumber || "INV-2026-001"} successfully marked PAID via Razorpay Webhook.`,
     });
   } catch (e) {
     return NextResponse.json({ error: "Webhook processing error" }, { status: 500 });
