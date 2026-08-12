@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckSquare, Clock, AlertTriangle, CheckCircle2, UserCheck, Plus, Filter, ArrowRight, User } from "lucide-react";
+import { CheckSquare, Clock, AlertTriangle, CheckCircle2, UserCheck, Plus, Filter, ArrowRight, User, Sparkles } from "lucide-react";
 import { ComplianceTask } from "@/app/api/tasks/route";
 
 const COLUMNS: Array<{ key: ComplianceTask["status"]; label: string; bg: string; badge: string }> = [
@@ -80,24 +80,45 @@ export default function TasksPage() {
     }
   }
 
+  async function handleAutoGenerateTasks() {
+    try {
+      const res = await fetch("/api/generate-tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientName: "Sunrise Traders Pvt Ltd", gstin: "27AABCU9603R1ZM", period: "March 2026" }),
+      });
+      const json = await res.json();
+      if (json.generatedTasks) {
+        setTasks((prev) => [...json.generatedTasks, ...prev]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   const filteredTasks = filterType === "ALL" ? tasks : tasks.filter((t) => t.taskType === filterType);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col min-h-screen md:h-[calc(100vh-4rem)] space-y-4">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col min-h-screen space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <CheckSquare size={24} className="text-brand-600" />
-            Compliance Task & Maker-Checker OS
+            Multi-Tax Compliance & Maker-Checker Kanban OS
           </h1>
-          <p className="text-xs sm:text-sm text-ink-300 mt-0.5">
-            Multi-tax Kanban workflow for GST, TDS, ITR, and ROC filings across article clerks and CA partners
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">
+            Track GSTR-1, GSTR-3B, GSTR-9, TDS, ITR & ROC task handoffs with Article Clerk (Maker) → CA Partner (Checker) sign-off
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary self-start sm:self-auto text-xs sm:text-sm">
-          <Plus size={15} /> Create Compliance Task
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button onClick={handleAutoGenerateTasks} className="btn-secondary text-xs sm:text-sm">
+            <Sparkles size={14} className="text-brand-600" /> Auto-Generate Tasks
+          </button>
+          <button onClick={() => setShowAddModal(true)} className="btn-primary text-xs sm:text-sm">
+            <Plus size={15} /> New Task
+          </button>
+        </div>
       </div>
 
       {/* Filter bar */}

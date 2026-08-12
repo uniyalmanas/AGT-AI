@@ -177,3 +177,22 @@ create policy vault_delete on storage.objects
     bucket_id = 'vault'
     and (storage.foldername(name))[1] = auth_firm_id()::text
   );
+
+-- Audit logs for Maker-Checker approvals & firm compliance actions
+create table if not exists audit_logs (
+  id          uuid primary key default gen_random_uuid(),
+  firm_id     uuid references firms(id) on delete cascade not null,
+  actor_name  text not null,
+  actor_role  text not null, -- partner | manager | article_clerk | client
+  action      text not null, -- return_filed | notice_replied | task_approved | fee_paid | document_uploaded
+  entity_type text not null, -- task | return | notice | invoice | client
+  entity_id   text,
+  details     jsonb,
+  created_at  timestamptz default now()
+);
+
+alter table audit_logs enable row level security;
+drop policy if exists audit_logs_all on audit_logs;
+create policy audit_logs_all on audit_logs
+  for all using (firm_id = auth_firm_id())
+  with check (firm_id = auth_firm_id());
