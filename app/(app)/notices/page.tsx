@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { AlertCircle, Sparkles, FileText, RotateCcw, Copy, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Sparkles, FileText, RotateCcw, Copy, CheckCircle2, Upload, AlignLeft } from "lucide-react";
+import { FileUploadZone } from "@/components/FileUploadZone";
 
 interface NoticeResult {
   noticeType: string;
@@ -53,6 +54,7 @@ const urgencyStyle: Record<string, string> = {
 };
 
 export default function NoticesPage() {
+  const [inputMode, setInputMode] = useState<"file" | "text">("file");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<NoticeResult | null>(null);
@@ -76,6 +78,10 @@ export default function NoticesPage() {
     } finally { setLoading(false); }
   }
 
+  function handleParsedNotice(parsedResult: NoticeResult, fileName: string) {
+    setResult(parsedResult);
+  }
+
   function copyReply() {
     if (result?.draftReply) {
       navigator.clipboard.writeText(result.draftReply);
@@ -90,34 +96,67 @@ export default function NoticesPage() {
         <div>
           <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
             <AlertCircle size={22} className="text-brand-600" />
-            GST Notice Reader
+            GST Notice Reader & Reply Drafter
           </h1>
-          <p className="text-sm text-ink-300 mt-1">Paste any GST notice — Claude explains it in plain English and drafts your reply</p>
+          <p className="text-sm text-ink-300 mt-1">Upload notice PDF/Scan or paste text — AI Vision explains it and drafts legal response</p>
         </div>
         {result && <button onClick={() => { setResult(null); setNotice(""); }} className="btn-secondary"><RotateCcw size={14} /> New notice</button>}
       </div>
 
       {!result && (
         <div className="card p-6">
-          <h2 className="font-semibold text-ink-900 mb-1">Paste the notice</h2>
-          <p className="text-xs text-ink-300 mb-4">Works with DRC-01, scrutiny notices, demand orders, ASMT-10, and any GSTN communication</p>
-          <textarea
-            className="input h-72 resize-none text-xs font-mono"
-            placeholder="Paste the full GST notice text here…"
-            value={notice}
-            onChange={e => setNotice(e.target.value)}
-          />
-          {error && (
-            <div className="mt-2 text-xs text-danger-text bg-danger-bg rounded-lg px-3 py-2 flex gap-2 items-center">
-              <AlertCircle size={13} /> {error}
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-ink-100">
+            <h2 className="font-semibold text-ink-900">Upload or Paste Notice</h2>
+            <div className="flex items-center gap-1 bg-ink-50 p-1 rounded-xl border border-ink-100">
+              <button
+                onClick={() => setInputMode("file")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  inputMode === "file" ? "bg-white text-brand-700 shadow-sm" : "text-ink-300 hover:text-ink-700"
+                }`}
+              >
+                <Upload size={13} /> Drop PDF / Scan Image
+              </button>
+              <button
+                onClick={() => setInputMode("text")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  inputMode === "text" ? "bg-white text-brand-700 shadow-sm" : "text-ink-300 hover:text-ink-700"
+                }`}
+              >
+                <AlignLeft size={13} /> Paste Text
+              </button>
+            </div>
+          </div>
+
+          {inputMode === "file" ? (
+            <FileUploadZone
+              target="notice"
+              label="Drop DRC-01 / ASMT-10 Notice PDF or Scanned Photo (.png/.jpg)"
+              onDataParsed={handleParsedNotice}
+            />
+          ) : (
+            <div>
+              <p className="text-xs text-ink-300 mb-3">Works with DRC-01, scrutiny notices, demand orders, ASMT-10, and any GSTN communication</p>
+              <textarea
+                className="input h-72 resize-none text-xs font-mono"
+                placeholder="Paste the full GST notice text here…"
+                value={notice}
+                onChange={e => setNotice(e.target.value)}
+              />
+              {error && (
+                <div className="mt-2 text-xs text-danger-text bg-danger-bg rounded-lg px-3 py-2 flex items-center gap-2">
+                  <AlertCircle size={13} /> {error}
+                </div>
+              )}
+              <div className="flex items-center gap-3 mt-4">
+                <button onClick={analyze} disabled={loading} className="btn-primary">
+                  {loading ? <><span className="spinner" /> Analyzing Notice…</> : <><Sparkles size={15} /> Analyze & Draft Reply</>}
+                </button>
+                <button onClick={() => setNotice(SAMPLE_NOTICE)} className="btn-secondary text-xs">
+                  Load sample DRC-01 notice
+                </button>
+              </div>
             </div>
           )}
-          <div className="flex gap-3 mt-4">
-            <button onClick={analyze} disabled={loading} className="btn-primary">
-              {loading ? <><span className="spinner" /> Analysing notice…</> : <><Sparkles size={15} /> Analyse & Draft Reply</>}
-            </button>
-            <button onClick={() => setNotice(SAMPLE_NOTICE)} className="btn-secondary text-xs">Load sample notice</button>
-          </div>
         </div>
       )}
 

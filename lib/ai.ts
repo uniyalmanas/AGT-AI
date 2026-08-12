@@ -22,12 +22,19 @@ export function activeProvider(): AIProvider {
   return process.env.NEXT_PUBLIC_AI_PROVIDER === "gemini" ? "gemini" : "claude";
 }
 
+export interface InlineData {
+  mimeType: string;
+  data: string; // base64 string
+}
+
 export interface CompleteOptions {
   system: string;
   user: string;
   maxTokens?: number;
   /** Force a specific provider for this call; defaults to the env-configured one. */
   provider?: AIProvider;
+  /** Optional inline media/document data for vision/multimodal OCR (e.g. PDF/image base64) */
+  inlineData?: InlineData;
 }
 
 function stripFences(text: string): string {
@@ -64,16 +71,17 @@ async function completeGemini(opts: CompleteOptions): Promise<string> {
     systemInstruction: opts.system,
     generationConfig: {
       maxOutputTokens: opts.maxTokens ?? 1500,
-      // Ask Gemini for raw JSON so we don't have to unwrap prose/fences.
       responseMimeType: "application/json",
-      // Gemini 2.5 models "think" by default, which silently eats the output
-      // token budget and truncates the JSON. We want fast structured extraction,
-      // not reasoning — so disable thinking. (Field not in this SDK's types yet.)
       thinkingConfig: { thinkingBudget: 0 },
     } as Record<string, unknown>,
   });
 
-  const result = await model.generateContent(opts.user);
+  const contents: Array<string | { inlineData: InlineData }> = [opts.user];
+  if (opts.inlineData) {
+    contents.push({ inlineData: opts.inlineData });
+  }
+
+  const result = await model.generateContent(contents);
   return stripFences(result.response.text());
 }
 

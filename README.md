@@ -6,9 +6,11 @@ A full-stack Next.js SaaS application designed for Chartered Accountant (CA) fir
 
 ## 🌟 Key Features
 
-- **🤖 GSTR-3B AI Auto-Filler** — Paste raw Tally/Busy/Excel export data, AI extracts and computes CGST, SGST, IGST liabilities, nets off ITC, and identifies potential mismatches.
+- **🤖 GSTR-3B AI Auto-Filler** — Upload Tally Excel sheets (.xlsx/.csv), PDFs, or paste raw data. AI extracts figures, computes CGST, SGST, IGST liabilities, nets off ITC, and identifies potential mismatches.
+- **📄 Direct PDF / Excel / OCR File Upload Engine** — Drag & drop Tally spreadsheets, invoice PDFs, or scanned notice photos directly into the app using Gemini 2.5 Flash Vision & OCR (`lib/parse-file.ts`).
+- **⚖️ GST Law Copilot ("GST Law GPT")** — AI Legal Counsel chatbot trained on CGST/IGST Acts 2017, Rules, CBIC Notifications, and AAR rulings. Provides section citations (e.g. 17(5), 86B) and risk warning banners (`app/(app)/copilot`).
 - **⚖️ Reconciliation Checker** — Detect GSTR-1 vs GSTR-3B vs GSTR-2B mismatches and ITC risks before tax authorities do.
-- **📄 GST Notice Reader & Reply Drafter** — Upload legal notices (DRC-01, ASMT-10, etc.), receive plain-English explanations for clients, and generate formal point-by-point reply letters for Proper Officers.
+- **📄 GST Notice Reader & Reply Drafter** — Upload legal notices (DRC-01, ASMT-10, etc.), receive plain-English explanations for clients, and generate formal point-by-point legal reply letters for Proper Officers.
 - **🛡️ Client Vault & Storage** — Secure storage for PAN, Aadhaar, DSC, GST Certificates, and registration records.
 - **📊 CA Dashboard & Due Date Tracker** — Multi-client overview with automated statutory due date alerts and filing status tracking.
 - **✅ Mod-36 GSTIN Validator** — Built-in official Indian Modulo-36 checksum validation algorithm (`lib/gstin.ts`) and state code checks (01–38).
@@ -20,8 +22,9 @@ A full-stack Next.js SaaS application designed for Chartered Accountant (CA) fir
 
 - **Frontend / Framework**: Next.js 14 (App Router, TypeScript) + Tailwind CSS + Lucide React + Recharts
 - **AI Providers**: Unified Provider Adapter (`lib/ai.ts`) supporting:
+  - **Google Gemini** (`gemini-2.5-flash` with Vision & Multimodal base64 support)
   - **Anthropic Claude** (`claude-sonnet-4-6`)
-  - **Google Gemini** (`gemini-2.5-flash`)
+- **Document & Spreadsheet Processors**: `xlsx` (SheetJS) + `pdf-parse`
 - **Database & Auth**: Supabase (PostgreSQL, `@supabase/ssr`, Row-Level Security)
 - **Deployment**: Vercel ready
 
@@ -88,9 +91,10 @@ gst-ai/
 │   ├── (app)/               # Protected CA Portal Routes
 │   │   ├── dashboard/       # Main overview & metrics
 │   │   ├── clients/         # Client directory
-│   │   ├── gstr3b/          # GSTR-3B AI Auto-Filler
+│   │   ├── gstr3b/          # GSTR-3B AI Auto-Filler & File Uploader
 │   │   ├── reconcile/       # GSTR-1 vs 3B vs 2B mismatch checker
-│   │   ├── notices/         # Notice reader & reply drafter
+│   │   ├── notices/         # Notice reader & reply drafter (PDF/Scan OCR)
+│   │   ├── copilot/         # CA Legal Copilot Chatbot ("GST Law GPT")
 │   │   ├── vault/           # Multi-tenant document vault
 │   │   └── settings/        # Account & firm settings
 │   ├── (auth)/              # Authentication (Login/Register)
@@ -98,11 +102,15 @@ gst-ai/
 │       ├── fill-form/       # AI API route: GSTR-3B extraction
 │       ├── reconcile/       # AI API route: Reconciliation analysis
 │       ├── analyze-notice/  # AI API route: Notice parsing & drafting
+│       ├── parse-file/      # Multimodal OCR API route (Excel, PDF, Scans)
+│       ├── copilot/         # AI Legal Copilot API route (CGST/IGST Law)
 │       └── clients/         # Client management API
 ├── components/
-│   └── Sidebar.tsx          # Navigation sidebar & user session UI
+│   ├── Sidebar.tsx          # Navigation sidebar & user session UI
+│   └── FileUploadZone.tsx   # Interactive drag & drop OCR file uploader
 ├── lib/
 │   ├── ai.ts                # Unified AI provider interface (Claude & Gemini)
+│   ├── parse-file.ts        # Spreadsheet & PDF OCR document parser
 │   ├── gstin.ts             # Modulo-36 GSTIN validation algorithm
 │   └── supabase/            # Supabase auth, clients, middleware & RLS schema
 └── app/globals.css          # Design system & CSS utilities
@@ -124,8 +132,9 @@ gst-ai/
 - [x] Multi-provider AI Engine (Claude & Gemini)
 - [x] Modulo-36 GSTIN Checksum Engine
 - [x] Supabase RLS Multi-Tenant Schema & Middleware
-- [ ] Direct PDF / OCR Scan parser for GST Notices
-- [ ] Tally XML & Excel Bulk Data Import
+- [x] Direct PDF / OCR Scan parser for GST Notices
+- [x] Tally XML & Excel Bulk Data Import (`.xlsx`, `.csv`)
+- [x] CA Legal Copilot Chatbot ("GST Law GPT")
 - [ ] GSP API / Playwright Automation for Direct GSTN Filing
 - [ ] Razorpay Subscription Billing
 

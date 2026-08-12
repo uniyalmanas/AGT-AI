@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Sparkles, FileText, AlertTriangle, CheckCircle2, Info, RotateCcw, ExternalLink } from "lucide-react";
+import { Sparkles, FileText, AlertTriangle, CheckCircle2, Info, RotateCcw, ExternalLink, Upload, AlignLeft } from "lucide-react";
+import { FileUploadZone } from "@/components/FileUploadZone";
 
 interface FilledData {
   gstin: string; legalName: string; period: string; filingType: string;
@@ -38,6 +39,7 @@ function fmt(n: number) {
 }
 
 export default function GSTR3BPage() {
+  const [inputMode, setInputMode] = useState<"file" | "text">("file");
   const [raw, setRaw] = useState("");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<FilledData | null>(null);
@@ -46,7 +48,7 @@ export default function GSTR3BPage() {
 
   async function runAI() {
     if (!raw.trim()) { setError("Please paste transaction data first."); return; }
-    setError(""); setLoading(true); setLog("Sending to Claude AI…"); setData(null);
+    setError(""); setLoading(true); setLog("Processing data with Gemini AI…"); setData(null);
     try {
       const res = await fetch("/api/fill-form", {
         method: "POST",
@@ -64,6 +66,11 @@ export default function GSTR3BPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleParsedFromFile(parsedData: FilledData, fileName: string) {
+    setData(parsedData);
+    setLog(`Data parsed directly from uploaded file "${fileName}".`);
   }
 
   function reset() { setRaw(""); setData(null); setLog(""); setError(""); }
@@ -85,7 +92,7 @@ export default function GSTR3BPage() {
             <FileText size={22} className="text-brand-600" />
             GSTR-3B Auto-Filler
           </h1>
-          <p className="text-sm text-ink-300 mt-1">Paste raw data — Claude reads, computes, and fills every field</p>
+          <p className="text-sm text-ink-300 mt-1">Upload Tally Excel / PDF or paste raw text — AI Vision extracts and computes every field</p>
         </div>
         {data && (
           <button onClick={reset} className="btn-secondary">
@@ -97,29 +104,61 @@ export default function GSTR3BPage() {
       {/* Step 1 — Input */}
       {!data && (
         <div className="card p-6 mb-6">
-          <h2 className="font-semibold text-ink-900 mb-4">
-            <span className="text-brand-400 mr-2">01</span>Paste your data
-          </h2>
-          <p className="text-xs text-ink-300 mb-3">Accepts Tally export, Excel summary, or plain text. Any format works.</p>
-          <textarea
-            className="input h-52 resize-none font-mono text-xs"
-            placeholder="Paste transaction summary, Tally XML export, or free-form text…"
-            value={raw}
-            onChange={e => setRaw(e.target.value)}
-          />
-          {error && (
-            <div className="mt-2 text-xs text-danger-text bg-danger-bg rounded-lg px-3 py-2 flex items-center gap-2">
-              <AlertTriangle size={13} /> {error}
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-ink-100">
+            <h2 className="font-semibold text-ink-900 flex items-center gap-2">
+              <span className="text-brand-600 font-bold">01</span> Provide Return Data
+            </h2>
+            <div className="flex items-center gap-1 bg-ink-50 p-1 rounded-xl border border-ink-100">
+              <button
+                onClick={() => setInputMode("file")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  inputMode === "file" ? "bg-white text-brand-700 shadow-sm" : "text-ink-300 hover:text-ink-700"
+                }`}
+              >
+                <Upload size={13} /> Drop Excel / PDF
+              </button>
+              <button
+                onClick={() => setInputMode("text")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  inputMode === "text" ? "bg-white text-brand-700 shadow-sm" : "text-ink-300 hover:text-ink-700"
+                }`}
+              >
+                <AlignLeft size={13} /> Paste Text
+              </button>
+            </div>
+          </div>
+
+          {inputMode === "file" ? (
+            <FileUploadZone
+              target="gstr3b"
+              label="Drop Tally Excel sheet (.xlsx/.csv) or Invoice/Summary PDF"
+              onDataParsed={handleParsedFromFile}
+            />
+          ) : (
+            <div>
+              <p className="text-xs text-ink-300 mb-3">Accepts Tally export, Excel summary, or plain text. Any format works.</p>
+              <textarea
+                className="input h-52 resize-none font-mono text-xs"
+                placeholder="Paste transaction summary, Tally XML export, or free-form text…"
+                value={raw}
+                onChange={e => setRaw(e.target.value)}
+              />
+              {error && (
+                <div className="mt-2 text-xs text-danger-text bg-danger-bg rounded-lg px-3 py-2 flex items-center gap-2">
+                  <AlertTriangle size={13} /> {error}
+                </div>
+              )}
+              <div className="flex items-center gap-3 mt-4">
+                <button onClick={runAI} disabled={loading} className="btn-primary">
+                  {loading ? <><span className="spinner" /> Processing…</> : <><Sparkles size={15} /> Fill GSTR-3B with AI</>}
+                </button>
+                <button onClick={() => setRaw(SAMPLE)} className="btn-secondary text-xs">
+                  Load sample data
+                </button>
+              </div>
             </div>
           )}
-          <div className="flex items-center gap-3 mt-4">
-            <button onClick={runAI} disabled={loading} className="btn-primary">
-              {loading ? <><span className="spinner" /> Processing…</> : <><Sparkles size={15} /> Fill GSTR-3B with AI</>}
-            </button>
-            <button onClick={() => setRaw(SAMPLE)} className="btn-secondary text-xs">
-              Load sample data
-            </button>
-          </div>
+
           {log && <p className="text-xs text-ink-300 mt-3 italic">{log}</p>}
         </div>
       )}
