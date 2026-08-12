@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, FileText, GitMerge,
-  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert,
+  AlertCircle, Vault, Settings, Sparkles, ChevronRight, LogOut, Scale, CheckSquare, ShieldAlert, CreditCard,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,6 +11,7 @@ const NAV = [
   { href: "/dashboard",  icon: LayoutDashboard, label: "Dashboard" },
   { href: "/tasks",      icon: CheckSquare,     label: "Compliance Tasks" },
   { href: "/litigation", icon: ShieldAlert,     label: "Litigation Tracker" },
+  { href: "/billing",    icon: CreditCard,      label: "Firm Billing & Profit" },
   { href: "/clients",    icon: Users,            label: "Clients" },
   { href: "/gstr3b",     icon: FileText,         label: "GSTR-3B Filler" },
   { href: "/reconcile",  icon: GitMerge,         label: "Reconciliation" },
