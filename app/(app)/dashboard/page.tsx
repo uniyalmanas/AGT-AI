@@ -9,6 +9,9 @@ import { CAInvoice } from "@/app/api/billing/route";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("CA Sharma");
+  const [greeting, setGreeting] = useState("Good morning");
+
   const [stats, setStats] = useState({
     totalClients: 0,
     filedCount: 0,
@@ -21,6 +24,23 @@ export default function DashboardPage() {
   const [activeNotices, setActiveNotices] = useState<LitigationNotice[]>([]);
 
   useEffect(() => {
+    // Dynamic greeting based on current time
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
+    // Fetch active user/partner name dynamically
+    fetch("/api/team")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.members && d.members.length > 0) {
+          const partner = d.members.find((m: any) => m.role === "partner") || d.members[0];
+          if (partner?.name) setUserName(partner.name);
+        }
+      })
+      .catch(() => {});
+
     fetchDashboardData();
   }, []);
 
@@ -73,7 +93,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
-            Good morning, CA Sharma 👋
+            {greeting}, {userName} 👋
           </h1>
           <p className="text-xs sm:text-sm text-ink-300 mt-1">
             Real-time compliance summary across {stats.totalClients} clients & {stats.noticeCount} active notices
