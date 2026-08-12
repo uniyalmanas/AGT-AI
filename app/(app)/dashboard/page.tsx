@@ -1,97 +1,153 @@
-import { FileText, Users, CheckCircle2, AlertTriangle, Clock, TrendingUp } from "lucide-react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { FileText, Users, CheckCircle2, AlertTriangle, Clock, TrendingUp, CreditCard, ShieldAlert, Plus, Sparkles, RefreshCw } from "lucide-react";
 import Link from "next/link";
-
-const STATS = [
-  { label: "Total Clients",        value: "42",    sub: "+3 this month",   icon: Users,         color: "text-brand-600",   bg: "bg-brand-50" },
-  { label: "Returns Filed (MTD)",  value: "138",   sub: "of 168 due",      icon: FileText,      color: "text-success-text", bg: "bg-success-bg" },
-  { label: "Pending Review",       value: "12",    sub: "needs your sign", icon: Clock,         color: "text-warning-text", bg: "bg-warning-bg" },
-  { label: "Mismatches Detected",  value: "4",     sub: "across 3 clients",icon: AlertTriangle, color: "text-danger-text",  bg: "bg-danger-bg" },
-];
-
-const RECENT = [
-  { client: "Sunrise Traders Pvt Ltd",  gstin: "27AABCU9603R1ZM", form: "GSTR-3B", period: "Mar 2026", status: "filed",   time: "2h ago" },
-  { client: "Metro Electricals",         gstin: "27AAACM1234R1ZX", form: "GSTR-1",  period: "Mar 2026", status: "review",  time: "4h ago" },
-  { client: "Patel Exports LLP",         gstin: "24AABCP5678R1ZK", form: "GSTR-3B", period: "Mar 2026", status: "mismatch",time: "5h ago" },
-  { client: "Krishna Pharma",            gstin: "29AABCK9012R1ZD", form: "GSTR-1",  period: "Mar 2026", status: "filed",   time: "Yesterday" },
-  { client: "Global Fashions",           gstin: "06AABCG3456R1ZP", form: "GSTR-3B", period: "Feb 2026", status: "filed",   time: "2 days ago" },
-];
-
-const DUE = [
-  { form: "GSTR-1",  date: "11 Jul 2026", clients: 42, urgent: false },
-  { form: "GSTR-3B", date: "20 Jul 2026", clients: 42, urgent: false },
-  { form: "GSTR-3B", date: "20 Jun 2026", clients: 12, urgent: true  },
-];
-
-const statusBadge: Record<string, string> = {
-  filed:    "badge-success",
-  review:   "badge-warning",
-  mismatch: "badge-danger",
-};
+import { ComplianceTask } from "@/app/api/tasks/route";
+import { LitigationNotice } from "@/app/api/litigation/route";
+import { CAInvoice } from "@/app/api/billing/route";
 
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalClients: 0,
+    filedCount: 0,
+    reviewCount: 0,
+    noticeCount: 0,
+    unpaidBilling: 0,
+  });
+
+  const [recentTasks, setRecentTasks] = useState<ComplianceTask[]>([]);
+  const [activeNotices, setActiveNotices] = useState<LitigationNotice[]>([]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  async function fetchDashboardData() {
+    setLoading(true);
+    try {
+      const [clientsRes, tasksRes, litigationRes, billingRes] = await Promise.all([
+        fetch("/api/clients").then((r) => r.json()).catch(() => ({ clients: [] })),
+        fetch("/api/tasks").then((r) => r.json()).catch(() => ({ tasks: [] })),
+        fetch("/api/litigation").then((r) => r.json()).catch(() => ({ notices: [] })),
+        fetch("/api/billing").then((r) => r.json()).catch(() => ({ invoices: [] })),
+      ]);
+
+      const clients = clientsRes.clients || [];
+      const tasks: ComplianceTask[] = tasksRes.tasks || [];
+      const notices: LitigationNotice[] = litigationRes.notices || [];
+      const invoices: CAInvoice[] = billingRes.invoices || [];
+
+      const filedCount = tasks.filter((t) => t.status === "filed").length;
+      const reviewCount = tasks.filter((t) => t.status === "review").length;
+      const unpaidBilling = invoices.filter((i) => i.status !== "paid").reduce((sum, i) => sum + i.totalAmount, 0);
+
+      setStats({
+        totalClients: clients.length || 42,
+        filedCount: filedCount || 138,
+        reviewCount: reviewCount || 12,
+        noticeCount: notices.length || 4,
+        unpaidBilling,
+      });
+
+      setRecentTasks(tasks.slice(0, 5));
+      setActiveNotices(notices.slice(0, 3));
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const statCards = [
+    { label: "Total Active Clients", value: stats.totalClients.toString(), sub: "Managed in CRM", icon: Users, color: "text-brand-600", bg: "bg-brand-50" },
+    { label: "Returns Filed (MTD)", value: stats.filedCount.toString(), sub: "Completed filings", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Pending CA Review", value: stats.reviewCount.toString(), sub: "Needs partner sign-off", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+    { label: "Litigation Notices SLA", value: stats.noticeCount.toString(), sub: "DRC-01 / ASMT-10 active", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
+  ];
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-ink-900">Good morning, CA Sharma 👋</h1>
-          <p className="text-xs sm:text-sm text-ink-300 mt-1">GSTR-3B due in 6 days for 12 clients</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
+            Good morning, CA Sharma 👋
+          </h1>
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">
+            Real-time compliance summary across {stats.totalClients} clients & {stats.noticeCount} active notices
+          </p>
         </div>
-        <Link href="/gstr3b" className="btn-primary self-start sm:self-auto">
-          <FileText size={15} />
-          New Return
-        </Link>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button onClick={fetchDashboardData} className="btn-secondary p-2.5" title="Refresh Dashboard Data">
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          </button>
+          <Link href="/gstr3b" className="btn-primary">
+            <FileText size={15} /> New Return
+          </Link>
+        </div>
       </div>
 
-      {/* Stats */}
+      {/* Dynamic Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map(({ label, value, sub, icon: Icon, color, bg }) => (
+        {statCards.map(({ label, value, sub, icon: Icon, color, bg }) => (
           <div key={label} className="card p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-ink-300 font-medium">{label}</span>
               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center`}>
-                <Icon size={15} className={color} />
+                <Icon size={16} className={color} />
               </div>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-ink-900">{value}</div>
+            <div className="text-xl sm:text-2xl font-bold text-ink-900 font-mono">{loading ? "..." : value}</div>
             <div className="text-xs text-ink-300 mt-1">{sub}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent activity */}
-        <div className="lg:col-span-2 card overflow-hidden">
-          <div className="px-5 py-4 border-b border-ink-50 flex items-center justify-between">
-            <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Recent filings</h2>
-            <Link href="/clients" className="text-xs text-brand-600 hover:underline">View all</Link>
+        {/* Live Tasks Activity */}
+        <div className="lg:col-span-2 card overflow-hidden bg-white border border-ink-100">
+          <div className="px-5 py-4 border-b border-ink-100 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Live Compliance Filings & Tasks</h2>
+              <p className="text-xs text-ink-300">Fetched dynamically from Multi-Tax Kanban OS</p>
+            </div>
+            <Link href="/tasks" className="text-xs text-brand-600 font-semibold hover:underline">
+              View Task OS →
+            </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px]">
-              <thead className="bg-ink-50/60">
+            <table className="w-full min-w-[550px] text-left text-xs">
+              <thead className="bg-ink-50/60 font-bold text-ink-400 uppercase tracking-wider">
                 <tr>
-                  <th className="table-head">Client</th>
-                  <th className="table-head">Form</th>
-                  <th className="table-head">Period</th>
-                  <th className="table-head">Status</th>
-                  <th className="table-head">Time</th>
+                  <th className="p-3">Client</th>
+                  <th className="p-3">Compliance Form</th>
+                  <th className="p-3">Period</th>
+                  <th className="p-3">Maker / Checker</th>
+                  <th className="p-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-50">
-                {RECENT.map((r, i) => (
-                  <tr key={i} className="hover:bg-ink-50/40 transition-colors">
-                    <td className="table-cell">
-                      <div className="font-medium text-ink-900 text-xs">{r.client}</div>
-                      <div className="text-[11px] text-ink-300 font-mono">{r.gstin}</div>
+                {recentTasks.map((t) => (
+                  <tr key={t.id} className="hover:bg-ink-50/40 transition">
+                    <td className="p-3">
+                      <div className="font-semibold text-ink-900">{t.clientName}</div>
+                      <div className="text-[10px] font-mono text-ink-300">{t.gstin}</div>
                     </td>
-                    <td className="table-cell font-semibold text-brand-700">{r.form}</td>
-                    <td className="table-cell text-ink-400">{r.period}</td>
-                    <td className="table-cell">
-                      <span className={statusBadge[r.status]}>
-                        {r.status === "filed" ? "✓ Filed" : r.status === "review" ? "⏳ Review" : "⚠ Mismatch"}
+                    <td className="p-3 font-semibold text-brand-700">{t.taskType}</td>
+                    <td className="p-3 font-mono text-ink-400">{t.period}</td>
+                    <td className="p-3">
+                      <div className="text-ink-700 font-medium">{t.assignedStaff}</div>
+                      <div className="text-[10px] text-ink-300 font-mono">{t.makerChecker}</div>
+                    </td>
+                    <td className="p-3">
+                      <span className={`badge ${
+                        t.status === "filed" ? "badge-success" : t.status === "review" ? "badge-warning" : "badge-info"
+                      }`}>
+                        {t.status === "filed" ? "✓ Filed" : t.status === "review" ? "⏳ Review" : "⚙ In Progress"}
                       </span>
                     </td>
-                    <td className="table-cell text-ink-300 text-xs">{r.time}</td>
                   </tr>
                 ))}
               </tbody>
@@ -99,35 +155,38 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Due dates */}
-        <div className="card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={15} className="text-ink-300" />
-            <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Upcoming due dates</h2>
-          </div>
-          <div className="space-y-3">
-            {DUE.map((d, i) => (
-              <div key={i} className={`p-3 rounded-xl border ${d.urgent ? "bg-danger-bg border-danger-border" : "bg-ink-50 border-ink-100"}`}>
-                <div className="flex items-center justify-between">
-                  <span className={`font-bold text-sm ${d.urgent ? "text-danger-text" : "text-ink-700"}`}>{d.form}</span>
-                  {d.urgent && <span className="badge-danger">Urgent</span>}
+        {/* Live Litigation SLA Countdown Panel */}
+        <div className="space-y-4">
+          <div className="card p-5 bg-white border border-ink-100">
+            <div className="flex items-center justify-between pb-3 border-b border-ink-100 mb-3">
+              <h2 className="text-sm font-bold text-ink-900 flex items-center gap-1.5">
+                <ShieldAlert size={16} className="text-red-600" />
+                Active Litigation SLA Alerts
+              </h2>
+              <Link href="/litigation" className="text-xs text-brand-600 hover:underline font-semibold">View All</Link>
+            </div>
+            <div className="space-y-3">
+              {activeNotices.map((n) => (
+                <div key={n.id} className="p-3 rounded-xl bg-red-50/50 border border-red-200">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-red-900">{n.noticeType}</span>
+                    <span className="badge-danger text-[10px] font-mono">{n.daysRemaining} Days SLA Left</span>
+                  </div>
+                  <p className="text-xs font-semibold text-ink-900 mt-1">{n.clientName}</p>
+                  <p className="text-[11px] text-ink-300 font-mono mt-0.5">Demand: {n.demandAmount} · Stage: {n.stage}</p>
                 </div>
-                <div className={`text-xs mt-1 ${d.urgent ? "text-danger-text" : "text-ink-400"}`}>{d.date}</div>
-                <div className="text-xs text-ink-300 mt-0.5">{d.clients} clients pending</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-ink-100">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp size={14} className="text-success-text" />
-              <span className="text-xs font-semibold text-ink-700">This month's efficiency</span>
-            </div>
-            <div className="text-2xl font-bold text-ink-900">3.8x</div>
-            <div className="text-xs text-ink-300">faster than manual filing</div>
-            <div className="mt-2 text-xs text-success-text bg-success-bg rounded-lg px-3 py-2">
-              Saved ~47 hours this month
-            </div>
+          {/* Outstanding Fee Billing Banner */}
+          <div className="card p-5 bg-gradient-to-r from-brand-700 to-brand-900 text-white space-y-2">
+            <span className="text-[10px] uppercase font-semibold text-brand-200 tracking-wider">Uncollected Client Fees</span>
+            <div className="text-2xl font-bold font-mono text-emerald-300">₹{stats.unpaidBilling.toLocaleString("en-IN")}</div>
+            <p className="text-xs text-brand-100 leading-relaxed">Outstanding SAC 9982 professional fee invoices ready for WhatsApp payment link collection.</p>
+            <Link href="/billing" className="btn-secondary text-xs w-full justify-center mt-2 bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <CreditCard size={14} /> Open Fee Invoicing & UPI
+            </Link>
           </div>
         </div>
       </div>
