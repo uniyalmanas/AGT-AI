@@ -111,40 +111,40 @@ Thank you,
   const totalOverdue = invoices.filter((i) => i.status === "overdue" || i.status === "sent").reduce((acc, i) => acc + i.totalAmount, 0);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col min-h-screen md:h-[calc(100vh-4rem)] space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <CreditCard size={24} className="text-brand-600" />
             SAC 9982 Professional Fee Invoicing & Profitability OS
           </h1>
-          <p className="text-sm text-ink-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-ink-300 mt-0.5">
             GST-compliant CA billing, Razorpay/UPI payment collection links, and Article Clerk profitability tracking
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary">
+        <button onClick={() => setShowAddModal(true)} className="btn-primary self-start sm:self-auto text-xs sm:text-sm">
           <Plus size={15} /> Create Tax Invoice (SAC 9982)
         </button>
       </div>
 
       {/* Metrics Banners */}
-      <div className="grid grid-cols-4 gap-4 mb-6 flex-shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
         <div className="card p-4 bg-white border border-ink-100">
           <span className="text-xs text-ink-300 font-medium">Total Fees Billed (MTD)</span>
-          <div className="text-2xl font-bold text-ink-900 mt-1">₹{totalBilled.toLocaleString("en-IN")}</div>
+          <div className="text-xl sm:text-2xl font-bold text-ink-900 mt-1">₹{totalBilled.toLocaleString("en-IN")}</div>
           <span className="text-[11px] text-brand-600">Across {invoices.length} invoices</span>
         </div>
 
         <div className="card p-4 bg-emerald-50/50 border border-emerald-200">
           <span className="text-xs font-semibold text-emerald-700">Collected via Razorpay/UPI</span>
-          <div className="text-2xl font-bold text-emerald-800 mt-1">₹{totalPaid.toLocaleString("en-IN")}</div>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-800 mt-1">₹{totalPaid.toLocaleString("en-IN")}</div>
           <span className="text-[11px] text-emerald-700">Instant bank settlement</span>
         </div>
 
         <div className="card p-4 bg-amber-50/50 border border-amber-200">
           <span className="text-xs font-semibold text-amber-700">Uncollected / Overdue</span>
-          <div className="text-2xl font-bold text-amber-800 mt-1">₹{totalOverdue.toLocaleString("en-IN")}</div>
+          <div className="text-xl sm:text-2xl font-bold text-amber-800 mt-1">₹{totalOverdue.toLocaleString("en-IN")}</div>
           <span className="text-[11px] text-amber-700">Awaiting client payment</span>
         </div>
 
@@ -153,16 +153,16 @@ Thank you,
             <span className="text-xs font-semibold text-purple-700">Firm Net Margin</span>
             <TrendingUp size={16} className="text-purple-600" />
           </div>
-          <div className="text-2xl font-bold text-purple-800 mt-1">54.2%</div>
+          <div className="text-xl sm:text-2xl font-bold text-purple-800 mt-1">54.2%</div>
           <span className="text-[11px] text-purple-700">Average staff cost efficiency</span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 mb-4 flex-shrink-0 border-b border-ink-100 pb-2">
+      <div className="flex items-center gap-2 flex-wrap flex-shrink-0 border-b border-ink-100 pb-2">
         <button
           onClick={() => setActiveTab("invoices")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "invoices" ? "bg-brand-600 text-white shadow-sm" : "text-ink-400 hover:bg-ink-50"
           }`}
         >
@@ -170,7 +170,7 @@ Thank you,
         </button>
         <button
           onClick={() => setActiveTab("profitability")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "profitability" ? "bg-brand-600 text-white shadow-sm" : "text-ink-400 hover:bg-ink-50"
           }`}
         >
@@ -179,15 +179,16 @@ Thank you,
       </div>
 
       {/* Main Tab Content */}
-      <div className="flex-1 card p-6 bg-white overflow-y-auto border border-ink-100">
+      <div className="flex-1 card p-4 sm:p-6 bg-white overflow-y-auto border border-ink-100">
         {activeTab === "invoices" ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
               <h2 className="text-sm font-bold text-ink-900">CA Professional Fee Tax Invoices</h2>
               <span className="text-xs text-ink-300">GST SAC Code 9982 (Accounting, Auditing & Tax Consultancy)</span>
             </div>
 
-            <table className="w-full text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[700px]">
               <thead className="bg-ink-50/60 text-[11px] font-bold text-ink-400 uppercase tracking-wider">
                 <tr>
                   <th className="p-3">Invoice #</th>
@@ -267,20 +268,22 @@ Thank you,
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
               <div>
                 <h2 className="text-sm font-bold text-ink-900">Article Clerk Hours & Client Profitability Analytics</h2>
                 <p className="text-xs text-ink-300">Tracks staff hours logged vs retainer fees to catch undercharged loss-making clients</p>
               </div>
-              <div className="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-xl border border-brand-100 font-semibold">
+              <div className="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-xl border border-brand-100 font-semibold self-start sm:self-auto">
                 Staff Cost Rate: ₹250 / Hour
               </div>
             </div>
 
-            <table className="w-full text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[700px]">
               <thead className="bg-ink-50/60 text-[11px] font-bold text-ink-400 uppercase tracking-wider">
                 <tr>
                   <th className="p-3">Client</th>
@@ -318,6 +321,7 @@ Thank you,
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

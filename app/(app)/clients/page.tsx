@@ -134,26 +134,26 @@ export default function ClientsPage() {
   );
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
-            <Users size={22} className="text-brand-600" /> Clients
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
+            <Users size={22} className="text-brand-600" /> Clients Master CRM
           </h1>
-          <p className="text-sm text-ink-300 mt-1">
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">
             {loading ? "Loading…" : `${clients.length} client${clients.length === 1 ? "" : "s"}`}
           </p>
         </div>
-        <button className="btn-primary" onClick={openAdd}>
+        <button className="btn-primary self-start sm:self-auto text-xs sm:text-sm" onClick={openAdd}>
           <Plus size={15} /> Add client
         </button>
       </div>
 
       {/* Search */}
-      <div className="relative mb-5">
+      <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-200" />
         <input
-          className="input pl-9"
+          className="input pl-9 text-xs sm:text-sm"
           placeholder="Search by name or GSTIN…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -182,7 +182,8 @@ export default function ClientsPage() {
             )}
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[650px]">
             <thead className="bg-ink-50/60">
               <tr>
                 <th className="table-head">Client</th>
@@ -236,6 +237,7 @@ export default function ClientsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

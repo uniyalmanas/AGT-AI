@@ -54,15 +54,15 @@ export default function ClientPortalPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-5">
       {/* Client Header */}
-      <div className="card p-6 bg-gradient-to-r from-brand-700 to-brand-900 text-white flex items-center justify-between">
+      <div className="card p-4 sm:p-6 bg-gradient-to-r from-brand-700 to-brand-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs text-brand-200 font-semibold uppercase tracking-wider">Client Self-Service Portal</span>
-          <h1 className="text-2xl font-bold mt-0.5">{data.clientName}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold mt-0.5">{data.clientName}</h1>
           <p className="text-xs font-mono text-brand-100 mt-1">GSTIN: {data.gstin} · Managed by {data.firmName}</p>
         </div>
-        <div className="bg-white/10 px-4 py-2 rounded-xl text-right border border-white/20">
+        <div className="bg-white/10 px-4 py-2 rounded-xl text-left sm:text-right border border-white/20 self-start sm:self-auto">
           <span className="text-[10px] text-brand-200 uppercase tracking-wider block">Compliance Status</span>
           <span className="text-xs font-bold text-emerald-300 flex items-center gap-1 mt-0.5">
             <CheckCircle2 size={13} /> Current Returns Up to Date
@@ -71,9 +71,9 @@ export default function ClientPortalPage() {
       </div>
 
       {/* Real-time Status Tracker */}
-      <div className="card p-6 bg-white border border-ink-100">
+      <div className="card p-4 sm:p-6 bg-white border border-ink-100">
         <h2 className="text-sm font-bold text-ink-900 mb-4">Real-Time Filing Status Tracker</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-emerald-900">GSTR-3B Return</span>
@@ -149,19 +149,19 @@ export default function ClientPortalPage() {
 
       {/* Pay Outstanding Fees */}
       {data.outstandingInvoices.length > 0 && (
-        <div className="card p-6 bg-white border border-amber-200">
+        <div className="card p-4 sm:p-6 bg-white border border-amber-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-ink-900">Outstanding Professional Fee Invoices</h2>
             <span className="badge-warning">Action Required</span>
           </div>
 
           {data.outstandingInvoices.map((inv, idx) => (
-            <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
+            <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
               <div>
                 <p className="text-xs font-bold text-ink-900">{inv.service}</p>
                 <p className="text-[11px] font-mono text-ink-400 mt-0.5">Invoice #{inv.invoiceNumber} · Due: {inv.dueDate}</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between sm:justify-end gap-3">
                 <span className="text-base font-bold font-mono text-ink-900">₹{inv.amount.toLocaleString("en-IN")}</span>
                 <a
                   href={inv.payUrl}

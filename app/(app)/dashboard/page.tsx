@@ -30,78 +30,80 @@ const statusBadge: Record<string, string> = {
 
 export default function DashboardPage() {
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">Good morning, CA Sharma 👋</h1>
-          <p className="text-sm text-ink-300 mt-1">Sunday, 14 June 2026 · GSTR-3B due in 6 days for 12 clients</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900">Good morning, CA Sharma 👋</h1>
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">GSTR-3B due in 6 days for 12 clients</p>
         </div>
-        <Link href="/gstr3b" className="btn-primary">
+        <Link href="/gstr3b" className="btn-primary self-start sm:self-auto">
           <FileText size={15} />
           New Return
         </Link>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map(({ label, value, sub, icon: Icon, color, bg }) => (
-          <div key={label} className="card p-5">
+          <div key={label} className="card p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-ink-300 font-medium">{label}</span>
               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center`}>
                 <Icon size={15} className={color} />
               </div>
             </div>
-            <div className="text-2xl font-bold text-ink-900">{value}</div>
+            <div className="text-xl sm:text-2xl font-bold text-ink-900">{value}</div>
             <div className="text-xs text-ink-300 mt-1">{sub}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent activity */}
-        <div className="col-span-2 card overflow-hidden">
+        <div className="lg:col-span-2 card overflow-hidden">
           <div className="px-5 py-4 border-b border-ink-50 flex items-center justify-between">
-            <h2 className="font-semibold text-ink-900">Recent filings</h2>
+            <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Recent filings</h2>
             <Link href="/clients" className="text-xs text-brand-600 hover:underline">View all</Link>
           </div>
-          <table className="w-full">
-            <thead className="bg-ink-50/60">
-              <tr>
-                <th className="table-head">Client</th>
-                <th className="table-head">Form</th>
-                <th className="table-head">Period</th>
-                <th className="table-head">Status</th>
-                <th className="table-head">Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-50">
-              {RECENT.map((r, i) => (
-                <tr key={i} className="hover:bg-ink-50/40 transition-colors">
-                  <td className="table-cell">
-                    <div className="font-medium text-ink-900 text-xs">{r.client}</div>
-                    <div className="text-[11px] text-ink-300 font-mono">{r.gstin}</div>
-                  </td>
-                  <td className="table-cell font-semibold text-brand-700">{r.form}</td>
-                  <td className="table-cell text-ink-400">{r.period}</td>
-                  <td className="table-cell">
-                    <span className={statusBadge[r.status]}>
-                      {r.status === "filed" ? "✓ Filed" : r.status === "review" ? "⏳ Review" : "⚠ Mismatch"}
-                    </span>
-                  </td>
-                  <td className="table-cell text-ink-300 text-xs">{r.time}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[500px]">
+              <thead className="bg-ink-50/60">
+                <tr>
+                  <th className="table-head">Client</th>
+                  <th className="table-head">Form</th>
+                  <th className="table-head">Period</th>
+                  <th className="table-head">Status</th>
+                  <th className="table-head">Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-ink-50">
+                {RECENT.map((r, i) => (
+                  <tr key={i} className="hover:bg-ink-50/40 transition-colors">
+                    <td className="table-cell">
+                      <div className="font-medium text-ink-900 text-xs">{r.client}</div>
+                      <div className="text-[11px] text-ink-300 font-mono">{r.gstin}</div>
+                    </td>
+                    <td className="table-cell font-semibold text-brand-700">{r.form}</td>
+                    <td className="table-cell text-ink-400">{r.period}</td>
+                    <td className="table-cell">
+                      <span className={statusBadge[r.status]}>
+                        {r.status === "filed" ? "✓ Filed" : r.status === "review" ? "⏳ Review" : "⚠ Mismatch"}
+                      </span>
+                    </td>
+                    <td className="table-cell text-ink-300 text-xs">{r.time}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Due dates */}
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Clock size={15} className="text-ink-300" />
-            <h2 className="font-semibold text-ink-900">Upcoming due dates</h2>
+            <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Upcoming due dates</h2>
           </div>
           <div className="space-y-3">
             {DUE.map((d, i) => (

@@ -85,17 +85,17 @@ export default function GSTR3BPage() {
   );
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <FileText size={22} className="text-brand-600" />
             GSTR-3B Auto-Filler
           </h1>
-          <p className="text-sm text-ink-300 mt-1">Upload Tally Excel / PDF or paste raw text — AI Vision extracts and computes every field</p>
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">Upload Tally Excel / PDF or paste raw text — AI Vision extracts and computes every field</p>
         </div>
         {data && (
-          <button onClick={reset} className="btn-secondary">
+          <button onClick={reset} className="btn-secondary self-start sm:self-auto">
             <RotateCcw size={14} /> Start over
           </button>
         )}
@@ -213,12 +213,12 @@ export default function GSTR3BPage() {
           {/* Table 3.1 */}
           <div className="card p-6">
             <p className="section-head">3.1 — Outward supplies & tax liability</p>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <Field label="B2B taxable (₹)" value={fmt(data.b2bTaxable)} mono />
               <Field label="B2C taxable (₹)" value={fmt(data.b2cTaxable)} mono />
               <Field label="Export supplies (₹)" value={fmt(data.exportSupplies)} mono />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Nil / exempt (₹)" value={fmt(data.nilExempt)} mono />
               <Field label="Reverse charge liability (₹)" value={fmt(data.reverseCharge)} mono />
             </div>
@@ -227,7 +227,7 @@ export default function GSTR3BPage() {
           {/* Table 4 — ITC */}
           <div className="card p-6">
             <p className="section-head">Table 4 — Input tax credit (ITC)</p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="ITC available — IGST (₹)" value={fmt(data.itcIGST)} mono />
               <Field label="ITC available — CGST (₹)" value={fmt(data.itcCGST)} mono />
               <Field label="ITC available — SGST (₹)" value={fmt(data.itcSGST)} mono />
@@ -237,12 +237,12 @@ export default function GSTR3BPage() {
           {/* Table 6 — Payment */}
           <div className="card p-6">
             <p className="section-head">Table 6 — Payment of tax</p>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <Field label="IGST payable (₹)" value={fmt(data.igstPayable)} mono />
               <Field label="CGST payable (₹)" value={fmt(data.cgstPayable)} mono />
               <Field label="SGST payable (₹)" value={fmt(data.sgstPayable)} mono />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Interest (₹)" value={fmt(data.interest)} mono />
               <Field label="Late fee (₹)" value={fmt(data.lateFee)} mono />
             </div>

@@ -103,28 +103,28 @@ export default function LitigationPage() {
   const droppedCount = notices.filter((n) => n.stage === "dropped").length;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col min-h-screen md:h-[calc(100vh-4rem)] space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <AlertCircle size={24} className="text-brand-600" />
             Litigation & Notice SLA Countdown Board
           </h1>
-          <p className="text-sm text-ink-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-ink-300 mt-0.5">
             Monitor tax scrutiny notices (DRC-01, ASMT-10, Income Tax 143) with 7-day SLA countdown alerts
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary shadow-sm">
+        <button onClick={() => setShowAddModal(true)} className="btn-primary shadow-sm self-start sm:self-auto text-xs sm:text-sm">
           <Plus size={15} /> Log New Tax Notice
         </button>
       </div>
 
       {/* Metrics Banners */}
-      <div className="grid grid-cols-4 gap-4 mb-5 flex-shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-shrink-0">
         <div className="card p-4 bg-white border border-ink-100 shadow-sm">
           <span className="text-xs text-ink-300 font-medium">Active Litigation Notices</span>
-          <div className="text-2xl font-bold text-ink-900 mt-1">{activeNotices.length}</div>
+          <div className="text-xl sm:text-2xl font-bold text-ink-900 mt-1">{activeNotices.length}</div>
           <span className="text-[11px] text-brand-600 font-medium">Across active clients</span>
         </div>
 
@@ -133,13 +133,13 @@ export default function LitigationPage() {
             <span className="text-xs font-semibold text-red-700">Urgent SLA (&lt;7 Days)</span>
             <ShieldAlert size={16} className="text-red-600" />
           </div>
-          <div className="text-2xl font-bold text-red-800 mt-1">{urgentCount}</div>
+          <div className="text-xl sm:text-2xl font-bold text-red-800 mt-1">{urgentCount}</div>
           <span className="text-[11px] text-red-600 font-medium">Immediate CA reply required</span>
         </div>
 
         <div className="card p-4 bg-white border border-ink-100 shadow-sm">
           <span className="text-xs text-ink-300 font-medium">Total Demand at Stake</span>
-          <div className="text-2xl font-bold text-ink-900 mt-1">₹1,82,930</div>
+          <div className="text-xl sm:text-2xl font-bold text-ink-900 mt-1">₹1,82,930</div>
           <span className="text-[11px] text-ink-300">Sum of active tax demands</span>
         </div>
 
@@ -148,14 +148,14 @@ export default function LitigationPage() {
             <span className="text-xs font-semibold text-emerald-700">Demands Dropped / Defended</span>
             <CheckCircle2 size={16} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold text-emerald-800 mt-1">{droppedCount}</div>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-800 mt-1">{droppedCount}</div>
           <span className="text-[11px] text-emerald-700 font-medium">100% Defense success rate</span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex items-center justify-between mb-5 flex-shrink-0 gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-wrap">
           <Filter size={14} className="text-ink-300 ml-1" />
           <span className="text-xs text-ink-300 font-semibold uppercase tracking-wider mr-1">Filter Notice:</span>
           {["ALL", "DRC-01", "ASMT-10", "Income Tax 143(1)", "DRC-07"].map((type) => (
@@ -171,11 +171,11 @@ export default function LitigationPage() {
           ))}
         </div>
 
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
           <input
             type="text"
-            className="input pl-8 py-1.5 text-xs"
+            className="input pl-8 py-1.5 text-xs w-full"
             placeholder="Search client or notice ref..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -184,7 +184,7 @@ export default function LitigationPage() {
       </div>
 
       {/* Kanban Stages Board */}
-      <div className="flex-1 grid grid-cols-5 gap-3 overflow-x-auto overflow-y-hidden pb-2">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-2">
         {STAGES.map((col) => {
           const colNotices = filteredNotices.filter((n) => n.stage === col.key);
           return (

@@ -83,25 +83,25 @@ export default function TasksPage() {
   const filteredTasks = filterType === "ALL" ? tasks : tasks.filter((t) => t.taskType === filterType);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col min-h-screen md:h-[calc(100vh-4rem)] space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <CheckSquare size={24} className="text-brand-600" />
             Compliance Task & Maker-Checker OS
           </h1>
-          <p className="text-sm text-ink-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-ink-300 mt-0.5">
             Multi-tax Kanban workflow for GST, TDS, ITR, and ROC filings across article clerks and CA partners
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary">
+        <button onClick={() => setShowAddModal(true)} className="btn-primary self-start sm:self-auto text-xs sm:text-sm">
           <Plus size={15} /> Create Compliance Task
         </button>
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-2 mb-6 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
         <Filter size={14} className="text-ink-300 ml-1" />
         <span className="text-xs text-ink-300 font-semibold uppercase tracking-wider mr-2">Filter Tax Type:</span>
         {["ALL", "GSTR-3B", "GSTR-1", "TDS 24Q/26Q", "ITR Form 3", "ROC AOC-4"].map((type) => (
@@ -118,7 +118,7 @@ export default function TasksPage() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 grid grid-cols-4 gap-4 overflow-x-auto overflow-y-hidden pb-2">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-2">
         {COLUMNS.map((col) => {
           const colTasks = filteredTasks.filter((t) => t.status === col.key);
           return (

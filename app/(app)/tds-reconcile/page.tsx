@@ -84,34 +84,34 @@ export default function TdsReconcilePage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-ink-900 flex items-center gap-2">
             <GitCompare size={24} className="text-brand-600" />
             Form 26AS & AIS / TIS TDS Reconciliation Engine
           </h1>
-          <p className="text-sm text-ink-300 mt-1">
+          <p className="text-xs sm:text-sm text-ink-300 mt-1">
             Auto-match Books TDS against Form 26AS and AIS statements before ITR filing to claim full tax refunds
           </p>
         </div>
         {result && (
-          <button onClick={() => { setResult(null); setBooksText(""); setForm26ASText(""); }} className="btn-secondary">
+          <button onClick={() => { setResult(null); setBooksText(""); setForm26ASText(""); }} className="btn-secondary self-start sm:self-auto">
             <RotateCcw size={14} /> New Reconciliation
           </button>
         )}
       </div>
 
       {!result ? (
-        <div className="card p-6 space-y-5 bg-white border border-ink-100">
+        <div className="card p-4 sm:p-6 space-y-5 bg-white border border-ink-100">
           <div className="flex items-center justify-between pb-3 border-b border-ink-100">
-            <h2 className="font-semibold text-ink-900">Provide TDS Data Records</h2>
+            <h2 className="font-semibold text-ink-900 text-sm sm:text-base">Provide TDS Data Records</h2>
             <button onClick={loadSampleData} className="btn-secondary text-xs">
               Load Sample Data
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">1. Books TDS Register (Tally / Excel Export)</label>
               <textarea
@@ -148,7 +148,7 @@ export default function TdsReconcilePage() {
             </div>
           )}
 
-          <button onClick={runTdsReconciliation} disabled={loading} className="btn-primary w-full justify-center py-3">
+          <button onClick={runTdsReconciliation} disabled={loading} className="btn-primary w-full justify-center py-3 text-xs sm:text-sm">
             {loading ? (
               <>
                 <span className="spinner" /> Reconciling 26AS vs Books with AI…
@@ -163,21 +163,21 @@ export default function TdsReconcilePage() {
       ) : (
         <div className="space-y-5">
           {/* Match Score Banner */}
-          <div className="card p-6 bg-gradient-to-r from-brand-600 to-brand-800 text-white flex items-center justify-between">
+          <div className="card p-4 sm:p-6 bg-gradient-to-r from-brand-600 to-brand-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-brand-200">TDS Reconciliation Health</span>
-              <h2 className="text-3xl font-bold mt-1">TDS Match Score: {result.tdsMatchScore} / 100</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mt-1">TDS Match Score: {result.tdsMatchScore} / 100</h2>
               <p className="text-xs text-brand-100 mt-1 leading-relaxed max-w-xl">{result.summary}</p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <span className="text-xs text-brand-200 uppercase tracking-wider">Unclaimed Tax Refund Credit</span>
-              <div className="text-2xl font-mono font-bold text-emerald-300 mt-1">{fmt(result.unclaimedRefundCredit)}</div>
+              <div className="text-xl sm:text-2xl font-mono font-bold text-emerald-300 mt-1">{fmt(result.unclaimedRefundCredit)}</div>
               <span className="text-[11px] text-brand-100">Ready to claim in ITR</span>
             </div>
           </div>
 
           {/* Metric Comparison */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card p-4">
               <span className="text-xs text-ink-300 font-medium">Total Books TDS</span>
               <div className="text-xl font-bold font-mono text-ink-900 mt-1">{fmt(result.totalBooksTds)}</div>
@@ -193,40 +193,42 @@ export default function TdsReconcilePage() {
           </div>
 
           {/* Itemized Mismatch Table */}
-          <div className="card p-6 bg-white border border-ink-100">
+          <div className="card p-4 sm:p-6 bg-white border border-ink-100">
             <h3 className="text-sm font-bold text-ink-900 mb-4">Itemized Deductor Discrepancies</h3>
-            <table className="w-full text-left text-xs">
-              <thead className="bg-ink-50 font-bold text-ink-400 uppercase tracking-wider">
-                <tr>
-                  <th className="p-3">Deductor Name</th>
-                  <th className="p-3">TAN</th>
-                  <th className="p-3">Section</th>
-                  <th className="p-3">Books TDS</th>
-                  <th className="p-3">Form 26AS</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Actionable Fix</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink-50 font-sans">
-                {result.mismatches.map((m, idx) => (
-                  <tr key={idx} className="hover:bg-ink-50/40 transition">
-                    <td className="p-3 font-semibold text-ink-900">{m.deductorName}</td>
-                    <td className="p-3 font-mono text-ink-400">{m.tan}</td>
-                    <td className="p-3 font-mono text-brand-700">{m.section}</td>
-                    <td className="p-3 font-mono text-ink-700">{m.booksAmount}</td>
-                    <td className="p-3 font-mono text-emerald-700">{m.form26ASAmount}</td>
-                    <td className="p-3">
-                      <span className={`badge ${
-                        m.status === "matched" ? "badge-success" : m.status === "missing_in_26as" ? "badge-danger" : "badge-warning"
-                      }`}>
-                        {m.status === "matched" ? "✓ Matched" : m.status === "missing_in_26as" ? "⚠ Short Deposited" : " Section Mismatch"}
-                      </span>
-                    </td>
-                    <td className="p-3 text-ink-700 leading-tight">{m.actionableFix}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[650px]">
+                <thead className="bg-ink-50 font-bold text-ink-400 uppercase tracking-wider">
+                  <tr>
+                    <th className="p-3">Deductor Name</th>
+                    <th className="p-3">TAN</th>
+                    <th className="p-3">Section</th>
+                    <th className="p-3">Books TDS</th>
+                    <th className="p-3">Form 26AS</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Actionable Fix</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-ink-50 font-sans">
+                  {result.mismatches.map((m, idx) => (
+                    <tr key={idx} className="hover:bg-ink-50/40 transition">
+                      <td className="p-3 font-semibold text-ink-900">{m.deductorName}</td>
+                      <td className="p-3 font-mono text-ink-400">{m.tan}</td>
+                      <td className="p-3 font-mono text-brand-700">{m.section}</td>
+                      <td className="p-3 font-mono text-ink-700">{m.booksAmount}</td>
+                      <td className="p-3 font-mono text-emerald-700">{m.form26ASAmount}</td>
+                      <td className="p-3">
+                        <span className={`badge ${
+                          m.status === "matched" ? "badge-success" : m.status === "missing_in_26as" ? "badge-danger" : "badge-warning"
+                        }`}>
+                          {m.status === "matched" ? "✓ Matched" : m.status === "missing_in_26as" ? "⚠ Short Deposited" : " Section Mismatch"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-ink-700 leading-tight">{m.actionableFix}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Recommendations */}
