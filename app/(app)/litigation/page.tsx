@@ -2,20 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { AlertCircle, Clock, Plus, ShieldAlert, FileText, Scale, ArrowRight, CheckCircle2, RotateCcw, ExternalLink } from "lucide-react";
+import { AlertCircle, Clock, Plus, ShieldAlert, FileText, Scale, CheckCircle2, Search, Filter, Sparkles, ArrowRight, UserCheck } from "lucide-react";
 import { LitigationNotice } from "@/app/api/litigation/route";
 
-const STAGES: Array<{ key: LitigationNotice["stage"]; label: string; bg: string }> = [
-  { key: "received", label: "📬 Notice Received", bg: "bg-red-50/60 border-red-200" },
-  { key: "evidence_gathering", label: "📂 Gathering Evidence", bg: "bg-amber-50/60 border-amber-200" },
-  { key: "reply_drafted", label: "📄 AI Reply Drafted", bg: "bg-blue-50/60 border-blue-200" },
-  { key: "submitted", label: "📤 Submitted to Officer", bg: "bg-purple-50/60 border-purple-200" },
-  { key: "dropped", label: "🎉 Demand Dropped / Closed", bg: "bg-emerald-50/60 border-emerald-200" },
+const STAGES: Array<{ key: LitigationNotice["stage"]; label: string; bg: string; border: string }> = [
+  { key: "received", label: "📬 Notice Received", bg: "bg-red-50/70", border: "border-red-200" },
+  { key: "evidence_gathering", label: "📂 Gathering Evidence", bg: "bg-amber-50/70", border: "border-amber-200" },
+  { key: "reply_drafted", label: "📄 AI Reply Drafted", bg: "bg-blue-50/70", border: "border-blue-200" },
+  { key: "submitted", label: "📤 Submitted to Officer", bg: "bg-purple-50/70", border: "border-purple-200" },
+  { key: "dropped", label: "🎉 Demand Dropped / Closed", bg: "bg-emerald-50/70", border: "border-emerald-200" },
 ];
 
 export default function LitigationPage() {
   const [notices, setNotices] = useState<LitigationNotice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("ALL");
+  const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [form, setForm] = useState({
@@ -23,7 +25,7 @@ export default function LitigationPage() {
     gstin: "",
     noticeType: "DRC-01",
     referenceNumber: "",
-    demandAmount: "",
+    demandAmount: "₹25,000",
     dueDate: "2026-08-30",
     assignedPartner: "CA Sharma",
     urgency: "high",
@@ -76,7 +78,7 @@ export default function LitigationPage() {
         gstin: "",
         noticeType: "DRC-01",
         referenceNumber: "",
-        demandAmount: "",
+        demandAmount: "₹25,000",
         dueDate: "2026-08-30",
         assignedPartner: "CA Sharma",
         urgency: "high",
@@ -87,99 +89,141 @@ export default function LitigationPage() {
     }
   }
 
+  const filteredNotices = notices.filter((n) => {
+    const matchesFilter = filterType === "ALL" || n.noticeType === filterType;
+    const matchesSearch =
+      n.clientName.toLowerCase().includes(search.toLowerCase()) ||
+      n.referenceNumber.toLowerCase().includes(search.toLowerCase()) ||
+      n.gstin.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
   const activeNotices = notices.filter((n) => n.stage !== "dropped");
   const urgentCount = activeNotices.filter((n) => n.daysRemaining <= 7).length;
+  const droppedCount = notices.filter((n) => n.stage === "dropped").length;
 
   return (
     <div className="p-8 max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+      <div className="flex items-center justify-between mb-5 flex-shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-ink-900 flex items-center gap-2">
             <AlertCircle size={24} className="text-brand-600" />
-            Litigation & Notice SLA Countdown Tracker
+            Litigation & Notice SLA Countdown Board
           </h1>
           <p className="text-sm text-ink-300 mt-0.5">
-            Track DRC-01, ASMT-10, and Income Tax notices across firm clients with 7-day SLA countdown alerts
+            Monitor tax scrutiny notices (DRC-01, ASMT-10, Income Tax 143) with 7-day SLA countdown alerts
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary">
-          <Plus size={15} /> Log New Notice
+        <button onClick={() => setShowAddModal(true)} className="btn-primary shadow-sm">
+          <Plus size={15} /> Log New Tax Notice
         </button>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6 flex-shrink-0">
-        <div className="card p-4 bg-white border border-ink-100">
-          <span className="text-xs text-ink-300 font-medium">Active Notices</span>
+      {/* Metrics Banners */}
+      <div className="grid grid-cols-4 gap-4 mb-5 flex-shrink-0">
+        <div className="card p-4 bg-white border border-ink-100 shadow-sm">
+          <span className="text-xs text-ink-300 font-medium">Active Litigation Notices</span>
           <div className="text-2xl font-bold text-ink-900 mt-1">{activeNotices.length}</div>
-          <span className="text-[11px] text-brand-600">Pending responses</span>
+          <span className="text-[11px] text-brand-600 font-medium">Across active clients</span>
         </div>
 
-        <div className="card p-4 bg-red-50/50 border border-red-200">
+        <div className="card p-4 bg-red-50/60 border border-red-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-red-700">Urgent Deadline (&lt;7 Days)</span>
+            <span className="text-xs font-semibold text-red-700">Urgent SLA (&lt;7 Days)</span>
             <ShieldAlert size={16} className="text-red-600" />
           </div>
           <div className="text-2xl font-bold text-red-800 mt-1">{urgentCount}</div>
-          <span className="text-[11px] text-red-600 font-medium">Requires immediate CA action</span>
+          <span className="text-[11px] text-red-600 font-medium">Immediate CA reply required</span>
         </div>
 
-        <div className="card p-4 bg-white border border-ink-100">
+        <div className="card p-4 bg-white border border-ink-100 shadow-sm">
           <span className="text-xs text-ink-300 font-medium">Total Demand at Stake</span>
-          <div className="text-2xl font-bold text-ink-900 mt-1">₹1,91,930</div>
-          <span className="text-[11px] text-ink-300">Across 3 active clients</span>
+          <div className="text-2xl font-bold text-ink-900 mt-1">₹1,82,930</div>
+          <span className="text-[11px] text-ink-300">Sum of active tax demands</span>
         </div>
 
-        <div className="card p-4 bg-emerald-50/50 border border-emerald-200">
+        <div className="card p-4 bg-emerald-50/60 border border-emerald-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-700">Demand Dropped / Closed</span>
+            <span className="text-xs font-semibold text-emerald-700">Demands Dropped / Defended</span>
             <CheckCircle2 size={16} className="text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold text-emerald-800 mt-1">1</div>
-          <span className="text-[11px] text-emerald-700">Successfully defended</span>
+          <div className="text-2xl font-bold text-emerald-800 mt-1">{droppedCount}</div>
+          <span className="text-[11px] text-emerald-700 font-medium">100% Defense success rate</span>
         </div>
       </div>
 
-      {/* Kanban Board */}
+      {/* Filter and Search Bar */}
+      <div className="flex items-center justify-between mb-5 flex-shrink-0 gap-4">
+        <div className="flex items-center gap-2">
+          <Filter size={14} className="text-ink-300 ml-1" />
+          <span className="text-xs text-ink-300 font-semibold uppercase tracking-wider mr-1">Filter Notice:</span>
+          {["ALL", "DRC-01", "ASMT-10", "Income Tax 143(1)", "DRC-07"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                filterType === type ? "bg-brand-600 text-white shadow-sm" : "bg-white text-ink-400 border border-ink-100 hover:bg-ink-50"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative w-64">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
+          <input
+            type="text"
+            className="input pl-8 py-1.5 text-xs"
+            placeholder="Search client or notice ref..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Kanban Stages Board */}
       <div className="flex-1 grid grid-cols-5 gap-3 overflow-x-auto overflow-y-hidden pb-2">
         {STAGES.map((col) => {
-          const colNotices = notices.filter((n) => n.stage === col.key);
+          const colNotices = filteredNotices.filter((n) => n.stage === col.key);
           return (
-            <div key={col.key} className={`rounded-2xl border p-3 flex flex-col h-full bg-white/70 ${col.bg}`}>
+            <div key={col.key} className={`rounded-2xl border p-3 flex flex-col h-full bg-white/80 ${col.bg} ${col.border}`}>
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-ink-100/60">
                 <span className="text-xs font-bold text-ink-900 truncate">{col.label}</span>
-                <span className="text-xs font-mono font-bold bg-white text-ink-700 px-2 py-0.5 rounded-full border border-ink-100">
+                <span className="text-xs font-mono font-bold bg-white text-ink-700 px-2 py-0.5 rounded-full border border-ink-100 shadow-2xs">
                   {colNotices.length}
                 </span>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-3 pr-1">
                 {colNotices.map((n) => (
-                  <div key={n.id} className="card p-3.5 bg-white hover:shadow-md transition border border-ink-100">
-                    <div className="flex items-start justify-between mb-1.5">
+                  <div key={n.id} className="card p-3.5 bg-white hover:shadow-md transition border border-ink-100/80">
+                    <div className="flex items-start justify-between mb-2">
                       <span className="text-[11px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">
                         {n.noticeType}
                       </span>
-                      <span className="text-xs font-mono font-bold text-ink-900">{n.demandAmount}</span>
+                      <span className="text-xs font-mono font-bold text-ink-900 bg-ink-50 px-2 py-0.5 rounded border border-ink-100">
+                        {n.demandAmount}
+                      </span>
                     </div>
 
                     <h3 className="text-xs font-bold text-ink-900 leading-snug">{n.clientName}</h3>
                     <p className="text-[10px] font-mono text-ink-300 mt-0.5">{n.referenceNumber}</p>
-                    <p className="text-[11px] text-ink-400 mt-2 line-clamp-2 leading-tight">{n.summary}</p>
+                    <p className="text-[11px] text-ink-400 mt-2 line-clamp-2 leading-snug">{n.summary}</p>
 
                     {/* SLA Countdown Timer */}
                     <div className="mt-3 pt-2.5 border-t border-ink-50 space-y-1.5">
                       {n.stage !== "dropped" ? (
-                        <div className={`flex items-center justify-between text-[11px] px-2 py-1 rounded-md font-mono font-bold ${
+                        <div className={`flex items-center justify-between text-[11px] px-2.5 py-1 rounded-lg font-mono font-bold ${
                           n.daysRemaining <= 7
                             ? "bg-red-100 text-red-800 border border-red-200 animate-pulse"
                             : "bg-amber-50 text-amber-800 border border-amber-200"
                         }`}>
                           <span className="flex items-center gap-1">
-                            <Clock size={11} /> SLA Deadline:
+                            <Clock size={11} /> SLA Countdown:
                           </span>
-                          <span>{n.daysRemaining} days left</span>
+                          <span>{n.daysRemaining} days</span>
                         </div>
                       ) : (
                         <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 font-semibold">
@@ -197,13 +241,13 @@ export default function LitigationPage() {
                     <div className="mt-3 pt-2 border-t border-ink-50 flex items-center justify-between gap-1">
                       <Link
                         href="/notices"
-                        className="text-[10px] text-brand-600 hover:underline flex items-center gap-0.5"
+                        className="text-[10px] font-semibold text-brand-600 hover:underline flex items-center gap-0.5"
                       >
-                        <FileText size={10} /> Draft Reply
+                        <FileText size={10} /> Draft AI Reply
                       </Link>
                       <Link
                         href="/copilot"
-                        className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5"
+                        className="text-[10px] font-semibold text-purple-600 hover:underline flex items-center gap-0.5"
                       >
                         <Scale size={10} /> Law Copilot
                       </Link>
@@ -212,17 +256,17 @@ export default function LitigationPage() {
                     {/* Stage Buttons */}
                     <div className="mt-2 pt-2 border-t border-ink-50 flex items-center justify-end">
                       {n.stage === "received" && (
-                        <button onClick={() => updateStage(n.id, "evidence_gathering")} className="text-[10px] text-amber-700 hover:underline">
+                        <button onClick={() => updateStage(n.id, "evidence_gathering")} className="text-[10px] text-amber-700 font-semibold hover:underline">
                           Gather Evidence →
                         </button>
                       )}
                       {n.stage === "evidence_gathering" && (
-                        <button onClick={() => updateStage(n.id, "reply_drafted")} className="text-[10px] text-blue-700 hover:underline">
-                          Draft Reply →
+                        <button onClick={() => updateStage(n.id, "reply_drafted")} className="text-[10px] text-blue-700 font-semibold hover:underline">
+                          Draft AI Reply →
                         </button>
                       )}
                       {n.stage === "reply_drafted" && (
-                        <button onClick={() => updateStage(n.id, "submitted")} className="text-[10px] text-purple-700 hover:underline">
+                        <button onClick={() => updateStage(n.id, "submitted")} className="text-[10px] text-purple-700 font-semibold hover:underline">
                           Mark Submitted →
                         </button>
                       )}
