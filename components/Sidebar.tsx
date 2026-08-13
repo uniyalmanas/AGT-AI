@@ -40,7 +40,7 @@ export default function Sidebar() {
 
   const NavContent = () => (
     <div className="flex flex-col h-full bg-white">
-      {/* Logo */}
+      {/* Top Header with Brand & Top Log Out Button */}
       <div className="px-5 py-5 border-b border-ink-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center">
@@ -51,9 +51,18 @@ export default function Sidebar() {
             <div className="text-[10px] text-ink-300 mt-0.5">CA Practice OS</div>
           </div>
         </div>
-        <button onClick={() => setMobileOpen(false)} className="md:hidden p-1 rounded-lg text-ink-400 hover:bg-ink-50">
-          <X size={20} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-lg text-ink-400 hover:text-red-600 hover:bg-red-50 transition"
+            title="Log out of firm portal"
+          >
+            <LogOut size={16} />
+          </button>
+          <button onClick={() => setMobileOpen(false)} className="md:hidden p-1 rounded-lg text-ink-400 hover:bg-ink-50">
+            <X size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Nav links */}
@@ -82,7 +91,7 @@ export default function Sidebar() {
           <Settings size={16} />
           <span>Settings</span>
         </Link>
-        <button onClick={handleLogout} className="nav-link w-full text-left">
+        <button onClick={handleLogout} className="nav-link w-full text-left text-red-600 hover:bg-red-50">
           <LogOut size={16} />
           <span>Sign out</span>
         </button>
@@ -108,13 +117,21 @@ export default function Sidebar() {
           </div>
           <span className="font-bold text-sm text-ink-900">GSTGenius</span>
         </div>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-xl border border-ink-100 text-ink-700 bg-ink-50 hover:bg-ink-100 transition"
-          aria-label="Toggle navigation menu"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 text-xs font-semibold transition"
+          >
+            <LogOut size={13} /> Log Out
+          </button>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-2 rounded-xl border border-ink-100 text-ink-700 bg-ink-50 hover:bg-ink-100 transition"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Overlay Drawer */}
