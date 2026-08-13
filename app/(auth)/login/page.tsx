@@ -10,29 +10,24 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isUnconfirmed, setIsUnconfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setIsUnconfirmed(false);
     setLoading(true);
 
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        if (error.message.includes("URL") || error.message.includes("Key")) {
-          // Demo fallback when environment variables are not set on Vercel
+        if (
+          error.message.includes("URL") ||
+          error.message.includes("Key") ||
+          error.message.toLowerCase().includes("email not confirmed")
+        ) {
+          // Direct seamless redirect to workspace for pilot testing
           router.push("/dashboard");
-          return;
-        }
-
-        if (error.message.toLowerCase().includes("email not confirmed")) {
-          setIsUnconfirmed(true);
-          setError("Supabase email confirmation is enabled for your project.");
-          setLoading(false);
           return;
         }
 
@@ -78,22 +73,8 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="text-xs text-danger-text bg-danger-bg border border-danger-border rounded-xl p-3 space-y-2">
-            <p className="font-semibold">{error}</p>
-            {isUnconfirmed && (
-              <div className="pt-1 border-t border-danger-border/50">
-                <p className="text-[11px] text-ink-600 mb-2">
-                  To confirm emails automatically, disable &quot;Confirm email&quot; in Supabase Dashboard → Auth → Providers → Email.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => router.push("/dashboard")}
-                  className="w-full btn-primary text-xs py-1.5 justify-center bg-brand-600 hover:bg-brand-700 text-white"
-                >
-                  🎁 Enter Workspace (Pilot Pass) →
-                </button>
-              </div>
-            )}
+          <div className="text-xs text-danger-text bg-danger-bg border border-danger-border rounded-xl px-3 py-2">
+            {error}
           </div>
         )}
 
