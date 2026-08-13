@@ -10,22 +10,29 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-razorpay-signature");
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
+    // Reject missing signature header in production mode
+    if (process.env.NODE_ENV === "production" && !signature) {
+      return NextResponse.json({ error: "Missing required x-razorpay-signature header" }, { status: 400 });
+    }
+
     // Fail Fast: In production, require RAZORPAY_WEBHOOK_SECRET
     if (process.env.NODE_ENV === "production" && !webhookSecret) {
       return NextResponse.json({ error: "RAZORPAY_WEBHOOK_SECRET is required in production" }, { status: 500 });
     }
 
-    // HMAC Signature Verification with Constant-Time Comparison
-    if (signature && webhookSecret) {
-      const expectedSignature = crypto
-        .createHmac("sha256", webhookSecret)
-        .update(bodyText)
-        .digest("hex");
+    // HMAC Signature Verification (Supports both Base64 & Hex formats with Constant-Time comparison)
+    if (webhookSecret && signature) {
+      const expectedHex = crypto.createHmac("sha256", webhookSecret).update(bodyText).digest("hex");
+      const expectedBase64 = crypto.createHmac("sha256", webhookSecret).update(bodyText).digest("base64");
 
-      const sigBuffer = Buffer.from(signature, "utf-8");
-      const expectedBuffer = Buffer.from(expectedSignature, "utf-8");
+      const sigBuf = Buffer.from(signature, "utf-8");
+      const hexBuf = Buffer.from(expectedHex, "utf-8");
+      const b64Buf = Buffer.from(expectedBase64, "utf-8");
 
-      if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+      const matchesHex = sigBuf.length === hexBuf.length && crypto.timingSafeEqual(sigBuf, hexBuf);
+      const matchesBase64 = sigBuf.length === b64Buf.length && crypto.timingSafeEqual(sigBuf, b64Buf);
+
+      if (!matchesHex && !matchesBase64) {
         return NextResponse.json({ error: "Invalid Razorpay Webhook Signature" }, { status: 400 });
       }
     }
