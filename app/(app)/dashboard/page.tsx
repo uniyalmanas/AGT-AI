@@ -177,6 +177,48 @@ export default function DashboardPage() {
 
         {/* Live Litigation SLA Countdown Panel */}
         <div className="space-y-4">
+          {/* Staff Capacity & Workload Control Panel */}
+          <div className="card p-5 bg-white border border-ink-100 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-ink-100">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-ink-900 flex items-center gap-1.5">
+                <Users size={15} className="text-brand-600" />
+                Staff Capacity & Workload Balance
+              </h2>
+              <span className="text-[10px] bg-brand-50 text-brand-700 font-semibold px-2 py-0.5 rounded border border-brand-200">Live</span>
+            </div>
+            <div className="space-y-2.5 text-xs">
+              <div>
+                <div className="flex justify-between text-ink-700 font-medium mb-1">
+                  <span>Rahul Sharma (Article Clerk)</span>
+                  <span className="font-mono text-ink-400">14 Active Tasks</span>
+                </div>
+                <div className="w-full h-1.5 bg-ink-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-600 rounded-full" style={{ width: "85%" }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-ink-700 font-medium mb-1">
+                  <span>Priya Patel (Senior Assistant)</span>
+                  <span className="font-mono text-ink-400">8 Active Tasks</span>
+                </div>
+                <div className="w-full h-1.5 bg-ink-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: "50%" }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-ink-700 font-medium mb-1">
+                  <span>Amit Verma (Tax Manager)</span>
+                  <span className="font-mono text-ink-400">5 Active Tasks</span>
+                </div>
+                <div className="w-full h-1.5 bg-ink-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full" style={{ width: "35%" }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="card p-5 bg-white border border-ink-100">
             <div className="flex items-center justify-between pb-3 border-b border-ink-100 mb-3">
               <h2 className="text-sm font-bold text-ink-900 flex items-center gap-1.5">

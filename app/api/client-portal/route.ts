@@ -1,72 +1,106 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getTasksStore, updateTaskStatusInStore } from "@/lib/tasks-store";
+import { logAuditEvent } from "@/lib/audit";
 
 export interface ClientPortalData {
   clientName: string;
   gstin: string;
-  firmName: string;
-  filingStatus: {
-    gstr1: "filed" | "in_progress" | "pending";
-    gstr3b: "filed" | "in_progress" | "pending";
-    tds: "filed" | "in_progress" | "pending";
-  };
-  recentDocuments: Array<{
+  firmName?: string;
+  activeTasks: Array<{
+    id: string;
+    formType: string;
+    period: string;
+    dueDate: string;
+    status: string;
+    requiredDocs: string[];
+  }>;
+  uploadedDocuments: Array<{
+    id: string;
+    filename: string;
+    date: string;
+    size: string;
+    status: string;
+  }>;
+  recentDocuments?: Array<{
+    id: string;
     name: string;
     docType: string;
     date: string;
     size: string;
     downloadUrl: string;
   }>;
-  outstandingInvoices: Array<{
+  outstandingInvoices?: Array<{
+    id: string;
     invoiceNumber: string;
     service: string;
-    amount: number;
     dueDate: string;
-    payUrl: string;
+    amount: number;
+    paymentLink: string;
   }>;
 }
 
-const DEMO_PORTAL_DATA: ClientPortalData = {
-  clientName: "Sunrise Traders Pvt Ltd",
-  gstin: "27AABCU9603R1ZM",
-  firmName: "Sharma & Associates (CA Firm)",
-  filingStatus: {
-    gstr1: "filed",
-    gstr3b: "filed",
-    tds: "in_progress",
-  },
-  recentDocuments: [
-    { name: "GSTR-3B_Ack_March2026.pdf", docType: "Acknowledgement", date: "2026-04-18", size: "245 KB", downloadUrl: "#" },
-    { name: "GSTR-1_Summary_March2026.pdf", docType: "Return Summary", date: "2026-04-10", size: "180 KB", downloadUrl: "#" },
-    { name: "GST_Certificate_2026.pdf", docType: "Registration", date: "2026-01-15", size: "1.2 MB", downloadUrl: "#" },
-  ],
-  outstandingInvoices: [
-    {
-      invoiceNumber: "SA/2026/041",
-      service: "Monthly GST Filing & DRC-01 Reply Drafting",
-      amount: 9440,
-      dueDate: "2026-08-15",
-      payUrl: "https://pay.razorpay.com/pl_P1a2b3c4d5e6f7",
-    },
-  ],
-};
-
-export async function GET(req: NextRequest) {
-  return NextResponse.json(DEMO_PORTAL_DATA);
+export async function GET() {
+  return NextResponse.json({
+    clientName: "Sunrise Traders Pvt Ltd",
+    gstin: "27AABCU9603R1ZM",
+    firmName: "Sharma & Associates, CAs",
+    activeTasks: [
+      { id: "t1", formType: "GSTR-3B", period: "March 2026", dueDate: "20 Apr 2026", status: "pending_data", requiredDocs: ["Tally Sales Excel", "Purchase Register PDF", "Bank Statement"] },
+      { id: "t2", formType: "TDS 26Q", period: "Q4 FY 2025-26", dueDate: "31 May 2026", status: "pending_data", requiredDocs: ["Form 16A Certificates", "Salary TDS Dump"] },
+    ],
+    uploadedDocuments: [
+      { id: "doc-1", filename: "Tally_Sales_Mar2026.xlsx", date: "2026-04-02", size: "1.4 MB", status: "verified" },
+      { id: "doc-2", filename: "GSTR2B_March_2026.pdf", date: "2026-04-03", size: "850 KB", status: "verified" },
+    ],
+    recentDocuments: [
+      { id: "rd-1", name: "GSTR-3B_Filed_Acknowledgment_Feb2026.pdf", docType: "GST Return", date: "20 Feb 2026", size: "420 KB", downloadUrl: "#" },
+      { id: "rd-2", name: "TDS_26Q_Q3_Receipt.pdf", docType: "TDS Return", date: "31 Jan 2026", size: "310 KB", downloadUrl: "#" },
+    ],
+    outstandingInvoices: [
+      { id: "inv-101", invoiceNumber: "INV-2026-001", service: "GSTR-1 & GSTR-3B Preparation (SAC 9982)", dueDate: "15 Apr 2026", amount: 17700, paymentLink: "https://pay.razorpay.com/pl_99821a" },
+    ],
+  });
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    const body = await req.json();
+    const { clientName, documentName, docType } = body;
+
+    const targetClient = clientName || "Sunrise Traders Pvt Ltd";
+
+    // 1. Locate active pending task for client
+    const tasks = getTasksStore();
+    const pendingTask = tasks.find(
+      (t) => t.clientName.toLowerCase().includes(targetClient.toLowerCase()) && t.status === "pending_data"
+    );
+
+    let advancedTaskId: string | null = null;
+
+    if (pendingTask) {
+      // 2. Closed-Loop: Advance task status from "pending_data" -> "in_progress"
+      updateTaskStatusInStore(pendingTask.id, "in_progress");
+      advancedTaskId = pendingTask.id;
     }
+
+    // 3. Log Audit Event
+    logAuditEvent({
+      actorName: `${targetClient} (Client Portal)`,
+      actorRole: "client",
+      action: "Document Uploaded & Task Advanced",
+      entityType: "task",
+      entityId: advancedTaskId || "doc-new",
+      details: `Client uploaded ${documentName || "Financial Statement"}. Task ${pendingTask ? `#${pendingTask.id} (${pendingTask.taskType})` : ""} automatically moved from Data Pending → In Progress.`,
+    });
 
     return NextResponse.json({
       ok: true,
-      message: `File "${file.name}" uploaded successfully to CA Firm Vault. Your CA has been notified via WhatsApp.`,
+      documentName,
+      advancedTaskId,
+      newStatus: "in_progress",
+      message: `Document "${documentName || "File"}" uploaded successfully. Task automatically advanced to In Progress!`,
     });
-  } catch (e: unknown) {
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json({ error: "Failed to process client upload" }, { status: 500 });
   }
 }

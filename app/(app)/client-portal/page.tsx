@@ -128,7 +128,7 @@ export default function ClientPortalPage() {
       <div className="card p-6 bg-white border border-ink-100">
         <h2 className="text-sm font-bold text-ink-900 mb-3">Filed Return Acknowledgments & PDF Receipts</h2>
         <div className="space-y-2">
-          {data.recentDocuments.map((doc, i) => (
+          {(data.recentDocuments || []).map((doc: any, i: number) => (
             <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-ink-50/60 border border-ink-100 hover:bg-ink-50 transition">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-brand-50 text-brand-700 rounded-lg">
@@ -148,14 +148,14 @@ export default function ClientPortalPage() {
       </div>
 
       {/* Pay Outstanding Fees */}
-      {data.outstandingInvoices.length > 0 && (
+      {(data.outstandingInvoices || []).length > 0 && (
         <div className="card p-4 sm:p-6 bg-white border border-amber-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-ink-900">Outstanding Professional Fee Invoices</h2>
             <span className="badge-warning">Action Required</span>
           </div>
 
-          {data.outstandingInvoices.map((inv, idx) => (
+          {(data.outstandingInvoices || []).map((inv: any, idx: number) => (
             <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
               <div>
                 <p className="text-xs font-bold text-ink-900">{inv.service}</p>
