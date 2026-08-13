@@ -1,62 +1,76 @@
 # 🏛️ GSTGenius — AI-Powered CA Firm Operating System (CA-OS)
 
-> **GSTGenius (AGT-AI)** is a comprehensive, production-grade Chartered Accountant (CA) Practice Operating System built with Next.js 14, Tailwind CSS, Google Gemini 2.5 Flash, Anthropic Claude, and Supabase. 
-> It transforms Indian CA practices by automating GST compliance, tax litigation defenses, multi-tax task workflows, client data collection over WhatsApp, professional billing, and annual audit reconciliations.
+> **GSTGenius (AGT-AI)** is a production-grade Chartered Accountant (CA) Practice Operating System built with Next.js 14, Tailwind CSS, Google Gemini 2.5 Flash, Anthropic Claude, and Supabase PostgreSQL.
+> It equips Indian CA practices with a **3-Layer Control Plane** that owns the full **Client → Work → Money** operational loop across GST, Income Tax, TDS, ROC, and Legal Scrutiny Litigation.
 
 ---
 
-## 🚀 What's New in Version 2.0 (4-Phase Product Evolution)
+## 🚀 Architectural Architecture (The 3-Layer CA OS)
 
-We have evolved **GSTGenius** from a point-solution GST calculator into a full-scale **CA Practice Management Operating System**:
+We designed GSTGenius around the **3-Layer Operating System Architecture** specifically to address the daily reality of Indian CA practices (staff workload balance, client data chasing, deadline pressure, and firm profitability):
 
-### 🟢 Phase 1: GST Core & Multimodal AI Core
-- **🤖 GSTR-3B AI Auto-Filler** ([`/gstr3b`](http://localhost:3000/gstr3b)) — Upload Tally Excel sheets (`.xlsx`/`.csv`), PDFs, or paste raw text. AI Vision extracts figures, computes CGST/SGST/IGST liabilities, and nets off ITC automatically.
-- **📄 Multimodal OCR File Engine** ([`components/FileUploadZone.tsx`](file:///D:/gst-ai/components/FileUploadZone.tsx)) — Drag & drop invoice PDFs, Tally dumps, or scanned notice photos directly into the app using Gemini 2.5 Flash Vision.
-- **📥 Official GSTN Portal JSON Exporter** ([`app/api/export-json/route.ts`](file:///D:/gst-ai/app/api/export-json/route.ts)) — 1-click export of government-schema-compliant GSTR-3B JSON ready for direct upload on [`gst.gov.in`](https://www.gst.gov.in).
-- **⚖️ 3-Way Reconciliation Checker** ([`/reconcile`](http://localhost:3000/reconcile)) — Cross-examines GSTR-1 vs 3B vs 2B with a **0–100 Compliance Score** and Rule 36(4) flags.
-- **📄 GST Notice Reader & Reply Drafter** ([`/notices`](http://localhost:3000/notices)) — Parses DRC-01 / ASMT-10 notices, produces 3-sentence plain-English client summaries, and drafts formal legal reply letters under Section 16(2) and 73 of the CGST Act.
-- **⚖️ GST Law Copilot ("GST Law GPT")** ([`/copilot`](http://localhost:3000/copilot)) — AI Legal Counsel trained on CGST/IGST Acts, Circulars, Section 17(5) blocked credit rules, and penalty risks.
-
----
-
-### 🟡 Phase 2: Practice Management Layer (CA Firm OS)
-- **📊 Multi-Tax Kanban Compliance Board** ([`/tasks`](http://localhost:3000/tasks)) — Unified task board for **GSTR-1, GSTR-3B, GSTR-9, TDS 24Q/26Q, ITR Form 3, and ROC AOC-4** across 4 stages (`Data Pending` → `In Progress` → `Under Review` → `Filed`) with **Maker-Checker role tags** (Article Clerk → CA Partner sign-off).
-- **🏛️ Litigation & Notice SLA Countdown Board** ([`/litigation`](http://localhost:3000/litigation)) — Centralized notice board tracking active DRC-01, ASMT-10, and Income Tax notices with real-time **7-day & 30-day countdown SLA alerts**.
-- **📲 Automated Client WhatsApp Reminders** ([`components/ClientReminderModal.tsx`](file:///D:/gst-ai/components/ClientReminderModal.tsx)) — 1-click WhatsApp data submission request generator with customizable document checklists (Sales, Purchase, Bank PDF, E-Way bills) and direct `wa.me` links.
-- **🏢 Unified Client CRM Master** ([`/clients`](http://localhost:3000/clients)) — Master profile per entity linking **GSTIN**, **PAN**, **CIN**, business type (Regular/Composition/SEZ), turnover threshold, and contact details with Modulo-36 GSTIN validation.
-- **🛡️ Multi-Tenant Vault & Document Portal** ([`/vault`](http://localhost:3000/vault)) — Secure client document storage (PAN, Aadhaar, GST Certificates, DSC) backed by Supabase Row-Level Security (`auth_firm_id()`).
-
----
-
-### 🟠 Phase 3: Firm Operations, Billing & Profitability
-- **🧾 SAC 9982 Professional Fee Invoicing Engine** ([`/billing`](http://localhost:3000/billing)) — Generates GST-compliant CA Tax Invoices under **SAC Code 9982** (Accounting, Auditing & Tax Consultancy) with CGST/SGST/IGST breakdown and printable PDF layout.
-- **💳 Razorpay & UPI Instant Payment Collection Links** ([`/billing`](http://localhost:3000/billing)) — Generates instant Razorpay payment links & UPI QR codes with 1-click WhatsApp dispatch.
-- **📈 Article Clerk Hours & Profitability Analytics** ([`/billing`](http://localhost:3000/billing)) — Tracks staff hours logged by Article Clerks (at ₹250/hr cost rate) vs monthly retainers to flag **loss-making undercharged clients**.
-
----
-
-### 🔵 Phase 4: Multi-Tax Moat & Client Self-Service Portal
-- **📊 Form 26AS & AIS / TIS TDS Reconciliation Engine** ([`/tds-reconcile`](http://localhost:3000/tds-reconcile)) — Cross-reconciles Books TDS vs Form 26AS & AIS statements before ITR filing to claim full tax refunds.
-- **🧮 Full-Year GSTR-9 & 9C Annual Audit Helper** ([`/gstr9-audit`](http://localhost:3000/gstr9-audit)) — Consolidates 12 months of filed returns against Audited P&L Statements to generate GSTR-9C reconciliation tables and DRC-03 recommendations.
-- **🌐 Client Self-Service Portal Workspace** ([`/client-portal`](http://localhost:3000/client-portal)) — Magic-link workspace where clients upload monthly purchase invoices, view real-time filing status, and download PDF receipts.
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        GSTGENIUS 3-LAYER CA OS ARCHITECTURE                            │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ LAYER 1: FIRM CONTROL PLANE (The Real OS Heart)                                        │
+│ • Client Engagement Master Profile (Entities, Services Opted, Retainers, Staff)       │
+│ • Multi-Tax Statutory Calendar Engine (GSTR-1 on 11th, GSTR-3B on 20th/18th, TDS 26Q) │
+│ • Dual-Layer Storage (Disk-backed JSON Persistence + Supabase PostgreSQL RLS Schema)  │
+│ • Maker-Checker Workload Kanban Board & Timestamped Audit Trail Logs                   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ LAYER 2: CLIENT → WORK → MONEY CLOSED LOOP                                            │
+│ • 📱 1-Click WhatsApp Checklist Chase Button                                            │
+│ • Closed-Loop Client Portal Upload (File Upload → Task Auto-Moves to In Progress)      │
+│ • Work-to-Billing Auto-Invoice Generator (Task Filed → SAC 9982 Invoice Created)       │
+│ • Live Razorpay Payment Webhooks (HMAC Verification → Auto-Marks Paid)                 │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ LAYER 3: AI EXECUTION LAYER (Execution Speed)                                          │
+│ • GSTR-3B AI Auto-Filler & Official GSTN Portal JSON Exporter                          │
+│ • DRC-01 Scrutiny Notice Reader & Legal Reply Drafter (Sec 16(2) & 73)               │
+│ • Form 26AS & AIS / TIS TDS Reconciliation Engine                                      │
+│ • GSTR-9 & 9C Annual Audit DRC-03 Short-Payment Calculator                             │
+│ • GST Law AI Copilot ("GST Law GPT") with CBIC Citations                               │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-### 📱 Full Multi-Device Responsive UI
-- **Mobile Top Header & Slide-Out Navigation Drawer** ([`components/Sidebar.tsx`](file:///D:/gst-ai/components/Sidebar.tsx)) — Hamburger menu toggle (`Menu` / `X` icons) for phone and tablet screens (`< 768px`).
-- **Fluid Layout Grids** (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`) and touch-scrollable tables across all pages.
+## 🛠️ The 4 Production Depth Engines
+
+1. **💾 Disk-Backed Permanent Persistence (`lib/persistence.ts`)**:
+   - Dual-persistence architecture saving state to disk files (`data/tasks.json`, `data/invoices.json`, `data/audit_logs.json`) AND Supabase PostgreSQL tables. Data permanently survives server restarts and cold deployments.
+
+2. **🗓️ Indian Statutory Filing Calendar Engine (`lib/statutory-calendar.ts`)**:
+   - Dynamically calculates exact statutory due dates based on Indian GST & Income Tax laws (GSTR-1 on 11th, GSTR-3B on 20th/18th, TDS 26Q on 31st of month following quarter).
+
+3. **📊 Tally Prime XML Debit/Credit & Ledger Classifier (`app/api/tally/route.ts`)**:
+   - XML DOM parser inspecting `<ISDEEMEDPOSITIVE>` (`Yes` = Debit/ITC, `No` = Credit/Sales) to extract CGST, SGST, IGST, and Taxable Ledgers dynamically.
+
+4. **💳 Razorpay Webhook Invoice Matcher (`app/api/webhooks/razorpay/route.ts`)**:
+   - HMAC SHA256 signature verification processing `payment.captured` webhooks, mutating invoice status to `paid` in DB & disk store, and logging audit records.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌐 Marketing Website & Landing Page Suite
 
-- **Frontend / Framework**: Next.js 14 (App Router, TypeScript) + Tailwind CSS + Lucide React
-- **AI Engine**: Unified Provider Interface (`lib/ai.ts`) supporting:
-  - **Google Gemini** (`gemini-2.5-flash` with Vision & Multimodal base64 support)
-  - **Anthropic Claude** (`claude-sonnet-4-6`)
-- **Document & Spreadsheet Processors**: `xlsx` (SheetJS) + `pdf-parse`
-- **Database & Auth**: Supabase (PostgreSQL, `@supabase/ssr`, Row-Level Security)
-- **Deployment**: Vercel ready
+Includes a modern glassmorphism Marketing Website for CA firm acquisition:
+- **🏠 Home Page (`/`)**: Hero section, live workspace preview, and **Interactive Practice ROI Calculator** (drag client slider to compute monthly hours saved).
+- **📖 About Us (`/about`)**: Vision, mission, statutory integrity, and AI tech stack architecture.
+- **💳 Pricing Plans (`/pricing`)**: Transparent flat-rate subscription pricing (**Starter ₹1,199/mo**, **Pro CA Firm OS ₹2,799/mo**, **Enterprise ₹6,399/mo**).
+- **📞 Contact Us (`/contact`)**: 1-on-1 Demo Request Form with instant submission feedback.
+- **🎁 100% Free Pilot Partner Pass**: All early CA practice pilots run with **100% free unlocked access and zero payment barriers**.
+
+---
+
+## 🔒 Multi-Tenant Firm Data Isolation
+
+- **Row-Level Security (RLS)** in `lib/supabase/schema.sql`:
+  ```sql
+  create policy tasks_all on tasks for all using (firm_id = auth_firm_id());
+  create policy invoices_all on invoices for all using (firm_id = auth_firm_id());
+  ```
+- **Firm Isolation**: Firm A sees ONLY Firm A's real clients, tasks, and billing. Signed-up accounts start with an isolated, clean workspace (`clients: []`).
 
 ---
 
@@ -78,7 +92,7 @@ Copy `.env.local.example` to `.env.local`:
 cp .env.local.example .env.local
 ```
 
-Configure your AI provider & keys in `.env.local`:
+Set your AI provider & API keys in `.env.local`:
 
 ```env
 # AI Provider Selection: "gemini" or "claude"
@@ -88,9 +102,10 @@ NEXT_PUBLIC_AI_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key-here
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
 
-# Supabase Credentials (Optional for local UI testing)
+# Supabase Credentials
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
 
 ### 3. Run Development Server
@@ -103,11 +118,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Verification & Build
+## 🧪 End-to-End Verification & Build
 
 ```bash
 # Run TypeScript compilation check
 npx tsc --noEmit
+
+# Run E2E Test Suite (13/13 APIs Passing)
+node scratch/test_e2e_suite.js
 
 # Build production bundle
 npm run build
@@ -115,46 +133,66 @@ npm run build
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Directory Map
 
 ```
 gst-ai/
 ├── app/
+│   ├── page.tsx             # Marketing Landing Page & Interactive ROI Calculator
+│   ├── about/page.tsx       # About Us page
+│   ├── pricing/page.tsx     # Pricing Plans page
+│   ├── contact/page.tsx     # Contact & Demo Request page
 │   ├── (app)/               # Authenticated CA Portal Routes
-│   │   ├── dashboard/       # Main overview & metrics
-│   │   ├── tasks/           # Multi-tax Kanban & Maker-Checker OS
+│   │   ├── dashboard/       # Main overview, metrics & Staff Capacity Control Panel
+│   │   ├── tasks/           # Multi-tax Kanban, Maker-Checker OS & WhatsApp Chase
 │   │   ├── litigation/      # Litigation SLA Countdown Board (DRC-01, ASMT-10)
 │   │   ├── billing/         # SAC 9982 Invoicing, Razorpay/UPI & Profitability
 │   │   ├── tds-reconcile/   # Form 26AS & AIS / TIS TDS Reconciliation Engine
 │   │   ├── gstr9-audit/     # Full-Year GSTR-9 & 9C Annual Audit Helper
-│   │   ├── client-portal/   # Client Self-Service Portal Workspace
+│   │   ├── client-portal/   # Closed-Loop Client Portal Workspace
 │   │   ├── clients/         # Client Master CRM & WhatsApp Reminders
 │   │   ├── gstr3b/          # GSTR-3B AI Auto-Filler & GSTN JSON Exporter
 │   │   ├── reconcile/       # GSTR-1 vs 3B vs 2B 3-way mismatch checker
-│   │   ├── notices/         # Notice reader & legal reply drafter (PDF/OCR)
-│   │   ├── copilot/         # CA Legal Copilot Chatbot ("GST Law GPT")
+│   │   ├── notices/         # Notice reader & legal reply drafter
+│   │   ├── copilot/         # AI Legal Copilot Chatbot ("GST Law GPT")
 │   │   ├── vault/           # Multi-tenant document vault
-│   │   └── settings/        # Account & firm settings
+│   │   └── settings/        # Team Invite OS & Firm Settings
 │   ├── (auth)/              # Authentication (Login/Register)
 │   └── api/                 # Next.js API Routes
 │       ├── fill-form/       # GSTR-3B AI extraction
 │       ├── export-json/     # GSTN Portal JSON payload generator
 │       ├── tasks/           # Compliance tasks API
+│       ├── generate-tasks/  # Intelligent statutory auto-task generator
+│       ├── engagements/     # Client Engagement Master API
+│       ├── audit-logs/      # Maker-Checker audit log API
+│       ├── webhooks/razorpay# Razorpay webhook payment engine
+│       ├── tally/           # Tally Prime XML Debit/Credit parser API
 │       ├── litigation/      # Litigation notices API
 │       ├── billing/         # SAC 9982 Invoicing & Profitability API
 │       ├── tds-reconcile/   # Form 26AS & AIS TDS reconciliation API
 │       ├── gstr9-audit/     # GSTR-9/9C annual audit API
-│       ├── client-portal/   # Client workspace & document upload API
-│       ├── parse-file/      # Multimodal OCR API (Excel, PDF, Scans)
-│       ├── copilot/         # AI Legal Copilot API (CGST/IGST Law)
+│       ├── client-portal/   # Closed-loop client workspace API
+│       ├── copilot/         # AI Legal Copilot API
 │       └── clients/         # Client management API
 ├── components/
-│   ├── Sidebar.tsx          # Navigation sidebar & mobile hamburger drawer
-│   ├── FileUploadZone.tsx   # Interactive drag & drop OCR file uploader
+│   ├── Navbar.tsx           # Marketing navigation header
+│   ├── Footer.tsx           # Marketing navigation footer
+│   ├── Sidebar.tsx          # Portal navigation sidebar & mobile drawer
+│   ├── FileUploadZone.tsx   # Multimodal OCR uploader
 │   └── ClientReminderModal.tsx # WhatsApp data request generator
+├── data/                    # Disk-backed JSON persistence store
+│   ├── tasks.json
+│   ├── invoices.json
+│   └── audit_logs.json
 ├── lib/
+│   ├── persistence.ts       # Disk-backed JSON storage engine
+│   ├── statutory-calendar.ts# Statutory filing calendar calculator
+│   ├── engagement-store.ts  # Client Engagement Master store
+│   ├── tasks-store.ts      # Tasks state store
+│   ├── billing-store.ts    # Billing state store
+│   ├── audit.ts             # Maker-Checker audit log store
 │   ├── ai.ts                # Unified AI provider interface (Claude & Gemini)
-│   ├── parse-file.ts        # Spreadsheet & PDF OCR document parser
+│   ├── parse-file.ts        # Spreadsheet & PDF OCR parser
 │   ├── gstin.ts             # Modulo-36 GSTIN validation algorithm
 │   └── supabase/            # Supabase auth, clients, middleware & RLS schema
 └── app/globals.css          # Design system & CSS utilities
@@ -162,13 +200,13 @@ gst-ai/
 
 ---
 
-## 🗄️ Database Setup (Supabase)
+## 🗄️ Database Schema Setup (Supabase)
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. Open **SQL Editor** -> **New query**.
-3. Copy and execute the complete schema from [`lib/supabase/schema.sql`](lib/supabase/schema.sql).
+3. Execute the full schema from [`lib/supabase/schema.sql`](lib/supabase/schema.sql).
 4. Create a private storage bucket named `vault` under **Storage**.
 
 ---
 
-Built with ❤️ using Next.js, Gemini AI 2.5 Flash & Claude AI.
+Built with ❤️ using Next.js 14, Gemini 2.5 Flash, Claude AI & Supabase PostgreSQL.
