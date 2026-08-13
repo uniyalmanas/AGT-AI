@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx tsc --noEmit && node scripts/test_e2e_suite.js"
+    "test": "npx tsc --noEmit && node scripts/test_unit_security.js && node scripts/test_e2e_suite.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
