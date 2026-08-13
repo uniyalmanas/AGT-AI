@@ -271,40 +271,49 @@ export default function HomePage() {
             <div className="space-y-4">
               {[
                 {
-                  q: "What is GSTGenius and how is it different from ClearTax or Jamku?",
-                  a: "ClearTax is a filing utility (it calculates tax numbers but doesn't manage staff tasks or billing). Jamku is a task board (it tracks tasks but has 0 AI features). GSTGenius is a hybrid CA Practice OS that unifies AI Execution (GSTR-3B, DRC-01 Notice Replies) with a Full Practice Control Plane (Maker-Checker Kanban, WhatsApp Chase, SAC 9982 Billing)."
+                  q: "What is GSTGenius and how is it different from ClearTax, Winman, or Jamku?",
+                  a: "ClearTax is a filing utility (calculates numbers but has zero task/billing tracking). Jamku is a legacy task board (tracks tasks but has 0 AI features). GSTGenius is a hybrid CA Practice OS that unifies AI Execution (GSTR-3B, DRC-01 Legal Replies) with a Full Practice Control Plane (Maker-Checker Kanban, WhatsApp Chase, SAC 9982 Billing).",
+                  diagram: `[Client Engagement Master] ──► [Maker-Checker Task Board] ──► [📱 WhatsApp Chase] ──► [Client Portal Upload] ──► [AI Return & Notice Prep] ──► [SAC 9982 Fee Invoice] ──► [Razorpay Webhook Auto-Paid]`
                 },
                 {
                   q: "How does the GSTR-3B AI Auto-Filler & GSTN JSON Exporter work?",
-                  a: "You drag & drop Tally Excel sheets, purchase PDFs, or paste raw text. AI Vision extracts sales, CGST/SGST/IGST liabilities, and Input Tax Credit (ITC). With 1 click, it exports official government-schema-compliant GSTR-3B JSON ready for direct upload on gst.gov.in."
+                  a: "You drag & drop Tally Excel sheets, purchase PDFs, or paste raw text. Gemini 2.5 Vision AI extracts sales, CGST/SGST/IGST liabilities, and nets off Input Tax Credit (ITC) under Rule 36(4). With 1 click, it exports official government-schema-compliant GSTR-3B JSON ready for direct upload on gst.gov.in.",
+                  diagram: `[Tally Excel / PDF / Photo] ──► [Gemini 2.5 Multimodal OCR] ──► [Net Eligible ITC Calculation] ──► [1-Click Government GSTN JSON Export]`
                 },
                 {
                   q: "How does the AI draft legal reply letters for DRC-01 or ASMT-10 notices?",
-                  a: "When a DRC-01 or ASMT-10 scrutiny notice PDF is uploaded into /litigation, AI extracts the tax demand, provides a 3-sentence summary for the client, tracks 7-day SLA countdowns, and drafts a formal legal reply letter citing Section 16(2) and Section 73 of the CGST Act."
+                  a: "When a DRC-01 or ASMT-10 scrutiny notice PDF is uploaded into /litigation, AI extracts the tax demand, provides a 3-sentence summary for the client, tracks 7-day SLA countdowns, and drafts a formal legal reply letter citing Section 16(2) and Section 73 of the CGST Act along with High Court rulings.",
+                  diagram: `[DRC-01 PDF Notice Upload] ──► [Extract Tax, Interest & Penalty] ──► [7-Day SLA Countdown Alert] ──► [Draft Legal Reply Citing Sec 16(2) & Sec 73]`
                 },
                 {
                   q: "What is the Maker-Checker staff workflow?",
-                  a: "Article Clerks (Makers) prepare return calculations and gather client documents, while Senior Assistants or CA Partners (Checkers) review and sign off before portal submission. Every status move is recorded in a timestamped audit log."
+                  a: "Article Clerks (Makers) prepare return calculations and gather client documents, while Senior Managers or CA Partners (Checkers) review and sign off before portal submission. Every status move is recorded in a timestamped audit log.",
+                  diagram: `[Article Clerk (Maker): Prepares Return & Reconciles] ──► [CA Partner (Checker): Reviews & Signs Off] ──► [Timestamped Audit Trail Entry Recorded]`
                 },
                 {
                   q: "How does 1-Click WhatsApp Checklist Chasing work?",
-                  a: "On any 'Data Pending' task card, clicking '📱 Chase Client on WhatsApp' opens a pre-filled WhatsApp message with a custom document checklist link (Tally Excel, Bank PDF). When the client uploads via the Client Portal, the task status automatically advances to 'In Progress'."
+                  a: "On any 'Data Pending' task card, clicking '📱 Chase Client on WhatsApp' opens a pre-filled WhatsApp message with a custom document checklist link (Tally Excel, Bank PDF). When the client uploads via the Client Portal, the task status automatically advances from 'Data Pending' to 'In Progress'.",
+                  diagram: `[Task: Data Pending] ──► [📱 1-Click WhatsApp Link Sent] ──► [Client Portal File Upload] ──► [Auto-Advance Task to In Progress]`
                 },
                 {
                   q: "What is SAC Code 9982 Professional Fee Invoicing?",
-                  a: "SAC 9982 is the official GST code for legal, accounting, audit, and tax consultancy services. When a task is marked 'Filed', GSTGenius automatically generates a SAC 9982 tax invoice with Razorpay payment links and UPI QR codes for 1-click WhatsApp collection."
+                  a: "SAC 9982 is the official GST code for legal, accounting, audit, and tax consultancy services. When a task is marked 'Filed', GSTGenius automatically generates a SAC 9982 tax invoice with Razorpay payment links and UPI QR codes for 1-click WhatsApp collection.",
+                  diagram: `[Task Marked Filed] ──► [Auto-Generate SAC 9982 Invoice] ──► [Razorpay Payment Link + UPI QR] ──► [Webhook HMAC Callback Auto-Marks Paid]`
                 },
                 {
-                  q: "Is our client data private and secure?",
-                  a: "Yes. GSTGenius uses Supabase PostgreSQL backed by strict Row-Level Security (RLS). Every firm is isolated with a unique firm_id. Firm A can never view or search Firm B's client data."
+                  q: "Is our client data private and secure with Supabase RLS?",
+                  a: "Yes. GSTGenius uses Supabase PostgreSQL backed by strict Row-Level Security (RLS). Every firm is isolated with a unique firm_id (WHERE firm_id = auth_firm_id()). Firm A can never view or search Firm B's client data.",
+                  diagram: `[User Auth Token (JWT with firm_id)] ──► [Supabase RLS Policy: WHERE firm_id = auth_firm_id()] ──► [Isolated Private Database Space]`
                 },
                 {
                   q: "How much workload and how many clients can GSTGenius handle?",
-                  a: "GSTGenius handles 100 to 500+ GSTINs per firm and 1,500+ monthly statutory tasks. Built on Next.js 14 serverless edge infrastructure, it automatically scales micro-servers during heavy 18th–20th monthly filing rushes."
+                  a: "GSTGenius handles 100 to 500+ GSTINs per firm and 1,500+ monthly statutory tasks. Built on Next.js 14 serverless edge infrastructure, it automatically scales micro-servers during heavy 18th–20th monthly filing rushes.",
+                  diagram: `[Next.js 14 Serverless Edge Architecture] ──► [Automatic Micro-Server Scaling on 18th-20th Rush] ──► [0ms SHA-256 AI Query Memory Cache]`
                 },
                 {
                   q: "How does the 100% Free Pilot Partner Pass work?",
-                  a: "During the pilot phase, practicing CA firms receive a 🎁 Pilot Partner Pass giving 100% free unlocked access to all features (GSTR-3B AI filler, Maker-Checker board, Scrutiny Notice Reader, Form 26AS reconciler) with zero payment barriers."
+                  a: "During the pilot phase, practicing CA firms receive a 🎁 Pilot Partner Pass giving 100% free unlocked access to all features (GSTR-3B AI filler, Maker-Checker board, Scrutiny Notice Reader, Form 26AS reconciler) with zero payment barriers.",
+                  diagram: `[Sign Up / Register Account] ──► [Activate 🎁 Pilot Partner Pass] ──► [100% Unlocked Access to Full CA OS Workspace]`
                 }
               ].map((item, idx) => (
                 <details key={idx} className="group card p-5 bg-white border border-ink-100 rounded-2xl hover:border-brand-200 transition">
@@ -314,9 +323,14 @@ export default function HomePage() {
                       <ChevronRight size={16} className="group-open:rotate-90 transition-transform" />
                     </span>
                   </summary>
-                  <p className="mt-3 text-xs sm:text-sm text-ink-400 leading-relaxed border-t border-ink-50 pt-3">
-                    {item.a}
-                  </p>
+                  <div className="mt-3 space-y-3 border-t border-ink-50 pt-3">
+                    <p className="text-xs sm:text-sm text-ink-600 leading-relaxed">
+                      {item.a}
+                    </p>
+                    <div className="p-3 bg-slate-900 text-brand-300 rounded-xl font-mono text-[11px] sm:text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+                      {item.diagram}
+                    </div>
+                  </div>
                 </details>
               ))}
             </div>
