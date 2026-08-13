@@ -8,6 +8,27 @@ export async function POST(req: NextRequest) {
   try {
     const bodyText = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    // Fail Fast: In production, require RAZORPAY_WEBHOOK_SECRET
+    if (process.env.NODE_ENV === "production" && !webhookSecret) {
+      return NextResponse.json({ error: "RAZORPAY_WEBHOOK_SECRET is required in production" }, { status: 500 });
+    }
+
+    // HMAC Signature Verification with Constant-Time Comparison
+    if (signature && webhookSecret) {
+      const expectedSignature = crypto
+        .createHmac("sha256", webhookSecret)
+        .update(bodyText)
+        .digest("hex");
+
+      const sigBuffer = Buffer.from(signature, "utf-8");
+      const expectedBuffer = Buffer.from(expectedSignature, "utf-8");
+
+      if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+        return NextResponse.json({ error: "Invalid Razorpay Webhook Signature" }, { status: 400 });
+      }
+    }
 
     let payload: any = {};
     try {
@@ -32,42 +53,32 @@ export async function POST(req: NextRequest) {
 
     let dbUpdated = false;
 
-    // Mutate real Supabase PostgreSQL invoices table
+    // Mutate real Supabase PostgreSQL invoices table dynamically
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       try {
         const supabase = createAdminClient();
-        const { error } = await supabase
+        const { data: invRow } = await supabase
           .from("invoices")
           .update({ status: "paid", updated_at: new Date().toISOString() })
-          .or(`id.eq.${targetInvoiceId},invoice_number.eq.${targetInvoiceId}`);
-        if (!error) dbUpdated = true;
+          .or(`id.eq.${targetInvoiceId},invoice_number.eq.${targetInvoiceId}`)
+          .select("firm_id")
+          .single();
 
-        // Also write to audit_logs PostgreSQL table
-        await supabase.from("audit_logs").insert({
-          firm_id: "00000000-0000-0000-0000-000000000001",
-          actor_name: "Razorpay Webhook Engine",
-          actor_role: "partner",
-          action: "Payment Captured & Invoice Paid",
-          entity_type: "invoice",
-          entity_id: targetInvoiceId,
-          details: { paymentEntity, event },
-        });
+        if (invRow) {
+          dbUpdated = true;
+          // Append audit record using dynamic firm_id from invoice row
+          await supabase.from("audit_logs").insert({
+            firm_id: invRow.firm_id,
+            actor_name: "Razorpay Webhook Engine",
+            actor_role: "partner",
+            action: "Payment Captured & Invoice Paid",
+            entity_type: "invoice",
+            entity_id: targetInvoiceId,
+            details: { paymentEntity, event },
+          });
+        }
       } catch (e) {
         console.error("Supabase webhook database update error:", e);
-      }
-    }
-
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "default_webhook_secret";
-
-    // HMAC Signature Verification if signature header provided
-    if (signature && secret !== "default_webhook_secret") {
-      const expectedSignature = crypto
-        .createHmac("sha256", secret)
-        .update(bodyText)
-        .digest("hex");
-
-      if (expectedSignature !== signature) {
-        return NextResponse.json({ error: "Invalid Razorpay Webhook Signature" }, { status: 400 });
       }
     }
 

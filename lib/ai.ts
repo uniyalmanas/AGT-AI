@@ -11,6 +11,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import crypto from "crypto";
 
 export type AIProvider = "claude" | "gemini";
 
@@ -147,11 +148,38 @@ async function completeGemini(opts: CompleteOptions): Promise<string> {
   }
 }
 
+const AI_CACHE_MAP = new Map<string, string>();
+
+/**
+ * Safely parses AI JSON response string with fallback defaults.
+ * Prevents JSON.parse route crashes under unformatted AI outputs.
+ */
+export function safeParseAIJSON<T>(jsonStr: string, fallback: T): T {
+  try {
+    const cleaned = stripFences(jsonStr);
+    const parsed = JSON.parse(cleaned);
+    return parsed && typeof parsed === "object" ? (parsed as T) : fallback;
+  } catch (e) {
+    console.warn("AI JSON Schema validation warning, using fallback defaults:", e);
+    return fallback;
+  }
+}
+
 /**
  * Run a system+user prompt against the configured provider and return cleaned
- * text. Callers JSON.parse the result (keeping parse errors in the route).
+ * text with in-memory SHA256 response caching.
  */
 export async function completeJSON(opts: CompleteOptions): Promise<string> {
+  const cacheKey = crypto.createHash("sha256").update(`${opts.system}:${opts.user}`).digest("hex");
+  if (AI_CACHE_MAP.has(cacheKey)) {
+    return AI_CACHE_MAP.get(cacheKey)!;
+  }
+
   const provider = opts.provider ?? activeProvider();
-  return provider === "gemini" ? completeGemini(opts) : completeClaude(opts);
+  const res = provider === "gemini" ? await completeGemini(opts) : await completeClaude(opts);
+
+  if (res && res.length < 5000) {
+    AI_CACHE_MAP.set(cacheKey, res);
+  }
+  return res;
 }
