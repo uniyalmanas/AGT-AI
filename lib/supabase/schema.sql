@@ -191,8 +191,88 @@ create table if not exists audit_logs (
   created_at  timestamptz default now()
 );
 
-alter table audit_logs enable row level security;
+-- Compliance tasks (Kanban task board)
+create table if not exists tasks (
+  id             uuid primary key default gen_random_uuid(),
+  firm_id        uuid references firms(id) on delete cascade not null,
+  client_name    text not null,
+  gstin          text,
+  task_type      text not null,
+  period         text not null,
+  due_date       text,
+  assigned_staff text,
+  maker_checker  text,
+  status         text default 'pending_data',
+  urgent         boolean default false,
+  created_at     timestamptz default now()
+);
+
+-- SAC 9982 Professional Fee Invoices
+create table if not exists invoices (
+  id             uuid primary key default gen_random_uuid(),
+  firm_id        uuid references firms(id) on delete cascade not null,
+  invoice_number text not null,
+  client_name    text not null,
+  client_gstin   text,
+  client_phone   text,
+  date           text,
+  due_date       text,
+  items          jsonb,
+  subtotal       numeric,
+  cgst           numeric,
+  sgst           numeric,
+  igst           numeric,
+  total_amount   numeric,
+  status         text default 'draft',
+  payment_link   text,
+  upi_qr_url     text,
+  created_at     timestamptz default now(),
+  updated_at     timestamptz default now()
+);
+
+-- Client Engagements Master
+create table if not exists client_engagements (
+  id               uuid primary key default gen_random_uuid(),
+  firm_id          uuid references firms(id) on delete cascade not null,
+  client_name      text not null,
+  gstin            text not null,
+  gst_frequency    text default 'Monthly',
+  tds_opted        boolean default true,
+  itr_form         text default 'ITR-3',
+  roc_opted        boolean default false,
+  monthly_retainer numeric default 5000,
+  assigned_maker   text default 'Article Clerk',
+  assigned_checker text default 'CA Partner',
+  created_at       timestamptz default now()
+);
+
+-- Helpful indexes for new tables
+create index if not exists idx_tasks_firm       on tasks(firm_id);
+create index if not exists idx_invoices_firm    on invoices(firm_id);
+create index if not exists idx_engagements_firm on client_engagements(firm_id);
+
+alter table audit_logs         enable row level security;
+alter table tasks              enable row level security;
+alter table invoices           enable row level security;
+alter table client_engagements enable row level security;
+
 drop policy if exists audit_logs_all on audit_logs;
 create policy audit_logs_all on audit_logs
   for all using (firm_id = auth_firm_id())
   with check (firm_id = auth_firm_id());
+
+drop policy if exists tasks_all on tasks;
+create policy tasks_all on tasks
+  for all using (firm_id = auth_firm_id())
+  with check (firm_id = auth_firm_id());
+
+drop policy if exists invoices_all on invoices;
+create policy invoices_all on invoices
+  for all using (firm_id = auth_firm_id())
+  with check (firm_id = auth_firm_id());
+
+drop policy if exists client_engagements_all on client_engagements;
+create policy client_engagements_all on client_engagements
+  for all using (firm_id = auth_firm_id())
+  with check (firm_id = auth_firm_id());
+

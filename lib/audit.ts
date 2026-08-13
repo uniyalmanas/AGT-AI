@@ -1,4 +1,5 @@
 import { readPersistentJSON, writePersistentJSON } from "@/lib/persistence";
+import { getAuthContext } from "@/lib/supabase/auth";
 
 export interface AuditLogItem {
   id: string;
@@ -44,23 +45,45 @@ const DEFAULT_AUDIT_LOGS: AuditLogItem[] = [
     details: "Payment of ₹17,700 captured via Razorpay UPI for SAC 9982 Tax Consultation",
     timestamp: "2026-08-12 14:15:00",
   },
-  {
-    id: "audit-4",
-    actorName: "Amit Verma",
-    actorRole: "manager",
-    action: "DRC-01 Reply Drafted",
-    entityType: "notice",
-    entityId: "not-1",
-    details: "Drafted legal reply under Section 16(2) for ASMT-10 scrutiny notice",
-    timestamp: "2026-08-12 11:20:00",
-  },
 ];
+
+export async function getAuditLogsAsync(): Promise<AuditLogItem[]> {
+  try {
+    const ctx = await getAuthContext();
+    if (ctx) {
+      const { data } = await ctx.supabase
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (data && data.length > 0) {
+        const formatted: AuditLogItem[] = data.map((d: any) => ({
+          id: d.id,
+          actorName: d.actor_name,
+          actorRole: d.actor_role,
+          action: d.action,
+          entityType: d.entity_type,
+          entityId: d.entity_id,
+          details: typeof d.details === "string" ? d.details : JSON.stringify(d.details),
+          timestamp: d.created_at ? d.created_at.replace("T", " ").substring(0, 19) : new Date().toISOString(),
+        }));
+        // Update disk backup cache
+        writePersistentJSON(AUDIT_FILE, formatted);
+        return formatted;
+      }
+    }
+  } catch (e) {
+    console.warn("Supabase audit_logs fetch fallback:", e);
+  }
+
+  return readPersistentJSON<AuditLogItem[]>(AUDIT_FILE, DEFAULT_AUDIT_LOGS);
+}
 
 export function getAuditLogs(): AuditLogItem[] {
   return readPersistentJSON<AuditLogItem[]>(AUDIT_FILE, DEFAULT_AUDIT_LOGS);
 }
 
-export function logAuditEvent(item: Omit<AuditLogItem, "id" | "timestamp">) {
+export async function logAuditEvent(item: Omit<AuditLogItem, "id" | "timestamp">) {
   const currentLogs = getAuditLogs();
   const newLog: AuditLogItem = {
     ...item,
@@ -69,5 +92,23 @@ export function logAuditEvent(item: Omit<AuditLogItem, "id" | "timestamp">) {
   };
   const updated = [newLog, ...currentLogs];
   writePersistentJSON(AUDIT_FILE, updated);
+
+  try {
+    const ctx = await getAuthContext();
+    if (ctx) {
+      await ctx.supabase.from("audit_logs").insert({
+        firm_id: ctx.firmId,
+        actor_name: item.actorName,
+        actor_role: item.actorRole,
+        action: item.action,
+        entity_type: item.entityType,
+        entity_id: item.entityId || null,
+        details: { text: item.details },
+      });
+    }
+  } catch (e) {
+    console.warn("Supabase audit log insert fallback:", e);
+  }
+
   return newLog;
 }

@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { getAuthContext } from "@/lib/supabase/auth";
 import { logAuditEvent } from "@/lib/audit";
 import { ComplianceTask } from "@/app/api/tasks/route";
 import { addTasksToStore } from "@/lib/tasks-store";
-import { getEngagementsStore } from "@/lib/engagement-store";
+import { getEngagementsStoreAsync } from "@/lib/engagement-store";
 import { calculateStatutoryDueDate } from "@/lib/statutory-calendar";
 
 export async function POST(req: NextRequest) {
   try {
+    const ctx = await getAuthContext();
     const body = await req.json();
-    const { period, firmId } = body;
+    const { period } = body;
 
-    const engagements = getEngagementsStore();
+    const engagements = await getEngagementsStoreAsync();
     const targetPeriod = period || "March 2026";
     const generatedTasks: ComplianceTask[] = [];
 
@@ -107,12 +108,11 @@ export async function POST(req: NextRequest) {
 
     let dbPersisted = false;
 
-    // Write generated tasks into Supabase PostgreSQL tasks table
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    // Write generated tasks into Supabase PostgreSQL tasks table dynamically
+    if (ctx) {
       try {
-        const supabase = createAdminClient();
         const rows = generatedTasks.map((t) => ({
-          firm_id: firmId || "00000000-0000-0000-0000-000000000001",
+          firm_id: ctx.firmId,
           client_name: t.clientName,
           gstin: t.gstin,
           task_type: t.taskType,
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
           status: t.status,
           urgent: t.urgent,
         }));
-        const { error } = await supabase.from("tasks").insert(rows);
+        const { error } = await ctx.supabase.from("tasks").insert(rows);
         if (!error) dbPersisted = true;
       } catch (e) {
         console.error("Supabase tasks insert error:", e);

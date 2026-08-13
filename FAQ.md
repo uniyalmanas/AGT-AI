@@ -285,3 +285,96 @@ During the pilot phase, practicing CA firms receive a **🎁 Pilot Partner Pass*
 ---
 
 *For technical support or live 1-on-1 demo scheduling, visit [https://agt-ai-chi.vercel.app/contact](https://agt-ai-chi.vercel.app/contact).*
+
+
+   🎨 In-Depth FAQ Explanations with Flowchart Diagrams Updated & Pushed! 
+
+  We have rewritten and expanded both **FAQ.md** and the Main Website Interactive Accordion Section (app/page.tsx) to feature in-depth
+  explanations accompanied by visual ASCII flowchart diagrams for every core architectural concept!
+  ──────
+  ### 🎨 Visual Flowchart Diagrams Included:
+
+  #### 1. 🏛️ Closed-Loop CA OS Architecture Diagram (FAQ.md Section 1 & 2):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                        GSTGENIUS OPERATIONAL LIFECYCLE                                 │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ [Client Engagement Master]                                                              │
+    │       │                                                                                │
+    │       ▼ (Auto-creates statutory tasks based on filing frequency)                       │
+    │ [Maker-Checker Kanban Board] ──(📱 1-Click WhatsApp Chase)──► [Client Upload Portal]    │
+    │       │                                                                 │              │
+    │       ▼                                                                 ▼ (Auto-moves) │
+    │ [AI Return & Notice Prep] ◄───────────────────────────────────── [Data Received]      │
+    │       │                                                                                │
+    │       ▼ (CA Partner Approves & Signs Off)                                              │
+    │ [SAC 9982 Fee Invoicing] ──(Razorpay / UPI Link)──► [Webhook Auto-Marks Paid]          │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    
+  #### 2. ⚡ GSTR-3B AI Auto-Filler & Government JSON Pipeline Diagram (FAQ.md Section 3):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                        GSTR-3B AI EXTRACTION & FILING PIPELINE                         │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ 1. DATA INGESTION    ──► Drag & Drop Tally Excel, Purchase PDF, or Bank Statement     │
+    │ 2. MULTIMODAL OCR    ──► Gemini 2.5 Vision parses line items & classifies ledgers      │
+    │ 3. TAX CALCULATION   ──► Nets off Outward Taxable Sales vs Eligible ITC (Rule 36-4)    │
+    │ 4. 1-CLICK JSON      ──► Generates government-schema-compliant GSTR-3B JSON           │
+    │                          Ready for direct upload on gst.gov.in                         │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    
+  #### 3. 🚨 Scrutiny Notice Reader & Legal Defense Reply Drafter Diagram (FAQ.md Section 4):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                     TAX LITIGATION & NOTICE DEFENSE PIPELINE                           │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ [DRC-01 Notice Upload]                                                                 │
+    │       ├──► Extracts Demanded Tax, Interest, & Penalty                                  │
+    │       ├──► Generates 3-Sentence Plain-English Summary for Client                       │
+    │       ├──► Triggers 7-Day SLA Countdown Alert on Partner Dashboard                    │
+    │       └──► Drafts Formal Legal Reply Letter Citing CGST Act Sec 16(2) & Sec 73         │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    
+  #### 4. 👥 Maker-Checker Staff Responsibility Pipeline Diagram (FAQ.md Section 5):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                     MAKER-CHECKER STAFF RESPONSIBILITY PIPELINE                        │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ ARTICLE CLERK (MAKER): Prepares Return ──► Moves Task: Pending ──► Review              │
+    │ CA PARTNER (CHECKER) : Reviews Audit Log ──► Marks Filed ──► Auto SAC 9982 Fee Invoice│
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    
+  #### 5. 📱 Closed-Loop WhatsApp Data Chase Flowchart Diagram (FAQ.md Section 6):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                    CLOSED-LOOP CLIENT DATA CHASE FLOWCHART                             │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ [Task: Data Pending] ──(Click WhatsApp Chase)──► [Pre-filled WhatsApp Message Sent]     │
+    │                                                                │                       │
+    │                                                                ▼                       │
+    │ [Task: In Progress] ◄──(Auto Status Advance)─── [Client Portal Upload Completed]      │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    
+  #### 6. 💳 SAC 9982 Fee Invoicing & Webhook Payment Flowchart Diagram (FAQ.md Section 7):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                     WORK-TO-BILLING AUTO-INVOICE ENGINE                                │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ [Task Marked "Filed"] ──► [Auto-Generate SAC 9982 Invoice] ──► [Razorpay Payment Link] │
+    │                                                                        │               │
+    │ [Invoice Marked "PAID"] ◄──(Constant-Time HMAC Verification)───────── [Webhook Callback]│
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+
+  #### 7. 🔒 Supabase Multi-Tenant Row-Level Security (RLS) Diagram (FAQ.md Section 8):
+
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                    SUPABASE MULTI-TENANT ROW-LEVEL SECURITY (RLS)                      │
+    ├────────────────────────────────────────────────────────────────────────────────────────┤
+    │ [User Auth JWT (with firm_id)] ──► [RLS Policy: WHERE firm_id = auth_firm_id()]        │
+    │                                           │                                            │
+    │                 ┌─────────────────────────┴────────────────────────┐                   │
+    │                 ▼                                                  ▼                   │
+    │      [Firm A Isolated Database]                         [Firm B Isolated Database]     │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
+    ──────
+  ### 🌐 Live Landing Page Preview:
