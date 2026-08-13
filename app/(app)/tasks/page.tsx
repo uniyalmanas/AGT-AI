@@ -183,41 +183,55 @@ export default function TasksPage() {
                       </div>
                     </div>
 
-                    {/* Quick Move Buttons */}
-                    <div className="mt-3 pt-2 flex items-center justify-between gap-1 border-t border-ink-50">
-                      {t.status !== "pending_data" && (
+                    {/* Quick Move Buttons & WhatsApp Chase */}
+                    {t.status === "pending_data" && (
+                      <div className="mt-3 pt-2 space-y-2 border-t border-ink-50">
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(
+                            `Hello ${t.clientName}, GST compliance reminder from your CA Firm for ${t.period} ${t.taskType}. Please upload your Tally Sales Excel & Purchase Register here: http://localhost:3000/client-portal`
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-full text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-1.5 rounded-lg border border-emerald-200 flex items-center justify-center gap-1 hover:bg-emerald-100 transition"
+                        >
+                          📱 Chase Client on WhatsApp
+                        </a>
+                        <div className="flex items-center justify-end">
+                          <button
+                            onClick={() => updateStatus(t.id, "in_progress")}
+                            className="text-[10px] text-blue-700 font-semibold hover:underline flex items-center gap-0.5"
+                          >
+                            Start Work →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {t.status !== "pending_data" && (
+                      <div className="mt-3 pt-2 flex items-center justify-between gap-1 border-t border-ink-50">
                         <button
                           onClick={() => updateStatus(t.id, "pending_data")}
                           className="text-[10px] text-amber-700 hover:underline"
                         >
                           ← Data Pending
                         </button>
-                      )}
-                      {t.status === "pending_data" && (
-                        <button
-                          onClick={() => updateStatus(t.id, "in_progress")}
-                          className="text-[10px] text-blue-700 hover:underline flex items-center gap-0.5 ml-auto"
-                        >
-                          Start Work →
-                        </button>
-                      )}
-                      {t.status === "in_progress" && (
-                        <button
-                          onClick={() => updateStatus(t.id, "review")}
-                          className="text-[10px] text-purple-700 hover:underline flex items-center gap-0.5 ml-auto"
-                        >
-                          Submit to Review →
-                        </button>
-                      )}
-                      {t.status === "review" && (
-                        <button
-                          onClick={() => updateStatus(t.id, "filed")}
-                          className="text-[10px] text-emerald-700 font-semibold hover:underline flex items-center gap-0.5 ml-auto"
-                        >
-                          Approve & Mark Filed ✓
-                        </button>
-                      )}
-                    </div>
+                        {t.status === "in_progress" && (
+                          <button
+                            onClick={() => updateStatus(t.id, "review")}
+                            className="text-[10px] text-purple-700 hover:underline flex items-center gap-0.5 ml-auto"
+                          >
+                            Submit to Review →
+                          </button>
+                        )}
+                        {t.status === "review" && (
+                          <button
+                            onClick={() => updateStatus(t.id, "filed")}
+                            className="text-[10px] text-emerald-700 font-semibold hover:underline flex items-center gap-0.5 ml-auto"
+                          >
+                            Approve & Mark Filed ✓
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
