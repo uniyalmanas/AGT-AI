@@ -12,6 +12,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import crypto from "crypto";
+import { z } from "zod";
 
 export type AIProvider = "claude" | "gemini";
 
@@ -36,6 +37,8 @@ export interface CompleteOptions {
   provider?: AIProvider;
   /** Optional inline media/document data for vision/multimodal OCR (e.g. PDF/image base64) */
   inlineData?: InlineData;
+  /** Optional Zod schema to validate parsed AI JSON against. If provided, the response will be parsed and validated; on validation error an exception will be thrown. */
+  schema?: z.ZodTypeAny;
 }
 
 function stripFences(text: string): string {
@@ -181,5 +184,17 @@ export async function completeJSON(opts: CompleteOptions): Promise<string> {
   if (res && res.length < 5000) {
     AI_CACHE_MAP.set(cacheKey, res);
   }
+
+  if (opts.schema) {
+    try {
+      const cleaned = stripFences(res);
+      const parsed = JSON.parse(cleaned);
+      const validated = opts.schema.parse(parsed);
+      return JSON.stringify(validated);
+    } catch (e: any) {
+      throw new Error(`AI output validation error: ${e?.message || e}`);
+    }
+  }
+
   return res;
 }
