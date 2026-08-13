@@ -6,3 +6,5 @@ node_modules/
 *.p12
 dist/
 .DS_Store
+
+.vercel

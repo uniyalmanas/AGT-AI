@@ -252,6 +252,77 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* INTERACTIVE FAQ ACCORDION SECTION */}
+        <section className="py-20 bg-white border-t border-ink-100">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+            <div className="text-center space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-100">
+                Got Questions? We Have Answers
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-ink-900">
+                Frequently Asked Questions (FAQ)
+              </h2>
+              <p className="text-sm sm:text-base text-ink-400 max-w-2xl mx-auto">
+                Everything you need to know about GSTGenius CA Practice OS, data privacy, legal notice drafting, and pilot setup.
+              </p>
+            </div>
+
+            {/* Accordion List */}
+            <div className="space-y-4">
+              {[
+                {
+                  q: "What is GSTGenius and how is it different from ClearTax or Jamku?",
+                  a: "ClearTax is a filing utility (it calculates tax numbers but doesn't manage staff tasks or billing). Jamku is a task board (it tracks tasks but has 0 AI features). GSTGenius is a hybrid CA Practice OS that unifies AI Execution (GSTR-3B, DRC-01 Notice Replies) with a Full Practice Control Plane (Maker-Checker Kanban, WhatsApp Chase, SAC 9982 Billing)."
+                },
+                {
+                  q: "How does the GSTR-3B AI Auto-Filler & GSTN JSON Exporter work?",
+                  a: "You drag & drop Tally Excel sheets, purchase PDFs, or paste raw text. AI Vision extracts sales, CGST/SGST/IGST liabilities, and Input Tax Credit (ITC). With 1 click, it exports official government-schema-compliant GSTR-3B JSON ready for direct upload on gst.gov.in."
+                },
+                {
+                  q: "How does the AI draft legal reply letters for DRC-01 or ASMT-10 notices?",
+                  a: "When a DRC-01 or ASMT-10 scrutiny notice PDF is uploaded into /litigation, AI extracts the tax demand, provides a 3-sentence summary for the client, tracks 7-day SLA countdowns, and drafts a formal legal reply letter citing Section 16(2) and Section 73 of the CGST Act."
+                },
+                {
+                  q: "What is the Maker-Checker staff workflow?",
+                  a: "Article Clerks (Makers) prepare return calculations and gather client documents, while Senior Assistants or CA Partners (Checkers) review and sign off before portal submission. Every status move is recorded in a timestamped audit log."
+                },
+                {
+                  q: "How does 1-Click WhatsApp Checklist Chasing work?",
+                  a: "On any 'Data Pending' task card, clicking '📱 Chase Client on WhatsApp' opens a pre-filled WhatsApp message with a custom document checklist link (Tally Excel, Bank PDF). When the client uploads via the Client Portal, the task status automatically advances to 'In Progress'."
+                },
+                {
+                  q: "What is SAC Code 9982 Professional Fee Invoicing?",
+                  a: "SAC 9982 is the official GST code for legal, accounting, audit, and tax consultancy services. When a task is marked 'Filed', GSTGenius automatically generates a SAC 9982 tax invoice with Razorpay payment links and UPI QR codes for 1-click WhatsApp collection."
+                },
+                {
+                  q: "Is our client data private and secure?",
+                  a: "Yes. GSTGenius uses Supabase PostgreSQL backed by strict Row-Level Security (RLS). Every firm is isolated with a unique firm_id. Firm A can never view or search Firm B's client data."
+                },
+                {
+                  q: "How much workload and how many clients can GSTGenius handle?",
+                  a: "GSTGenius handles 100 to 500+ GSTINs per firm and 1,500+ monthly statutory tasks. Built on Next.js 14 serverless edge infrastructure, it automatically scales micro-servers during heavy 18th–20th monthly filing rushes."
+                },
+                {
+                  q: "How does the 100% Free Pilot Partner Pass work?",
+                  a: "During the pilot phase, practicing CA firms receive a 🎁 Pilot Partner Pass giving 100% free unlocked access to all features (GSTR-3B AI filler, Maker-Checker board, Scrutiny Notice Reader, Form 26AS reconciler) with zero payment barriers."
+                }
+              ].map((item, idx) => (
+                <details key={idx} className="group card p-5 bg-white border border-ink-100 rounded-2xl hover:border-brand-200 transition">
+                  <summary className="font-bold text-sm sm:text-base text-ink-900 cursor-pointer flex items-center justify-between gap-4 list-none select-none">
+                    <span>{item.q}</span>
+                    <span className="p-1 rounded-lg bg-ink-50 group-open:bg-brand-50 text-ink-400 group-open:text-brand-600 transition">
+                      <ChevronRight size={16} className="group-open:rotate-90 transition-transform" />
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-xs sm:text-sm text-ink-400 leading-relaxed border-t border-ink-50 pt-3">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* FINAL CTA BANNER */}
         <section className="py-20 bg-slate-900 text-white text-center">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
