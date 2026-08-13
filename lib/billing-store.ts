@@ -1,6 +1,9 @@
 import { CAInvoice, ClientProfitability } from "@/app/api/billing/route";
+import { readPersistentJSON, writePersistentJSON } from "@/lib/persistence";
 
-let INITIAL_INVOICES: CAInvoice[] = [
+const INVOICES_FILE = "invoices.json";
+
+const DEFAULT_INVOICES: CAInvoice[] = [
   {
     id: "inv-101",
     invoiceNumber: "INV-2026-001",
@@ -64,14 +67,14 @@ let INITIAL_INVOICES: CAInvoice[] = [
   },
 ];
 
-let CLIENT_PROFITABILITY: ClientProfitability[] = [
+const CLIENT_PROFITABILITY: ClientProfitability[] = [
   { clientId: "c1", clientName: "Sunrise Traders Pvt Ltd", monthlyRetainer: 15000, staffHoursSpent: 18, hourlyCostRate: 250, totalStaffCost: 4500, netProfit: 10500, profitMargin: 70, status: "profitable" },
   { clientId: "c2", clientName: "Metro Electricals", monthlyRetainer: 5000, staffHoursSpent: 16, hourlyCostRate: 250, totalStaffCost: 4000, netProfit: 1000, profitMargin: 20, status: "low_margin" },
   { clientId: "c3", clientName: "Patel Exports LLP", monthlyRetainer: 8000, staffHoursSpent: 42, hourlyCostRate: 250, totalStaffCost: 10500, netProfit: -2500, profitMargin: -31, status: "loss_making" },
 ];
 
 export function getInvoicesStore(): CAInvoice[] {
-  return INITIAL_INVOICES;
+  return readPersistentJSON<CAInvoice[]>(INVOICES_FILE, DEFAULT_INVOICES);
 }
 
 export function getProfitabilityStore(): ClientProfitability[] {
@@ -79,18 +82,50 @@ export function getProfitabilityStore(): ClientProfitability[] {
 }
 
 export function markInvoiceAsPaid(invoiceId?: string) {
+  const invoices = getInvoicesStore();
+  let matched: CAInvoice | undefined;
+
   if (!invoiceId) {
-    const unpaid = INITIAL_INVOICES.find((i) => i.status !== "paid");
-    if (unpaid) unpaid.status = "paid";
-    return unpaid || INITIAL_INVOICES[0];
+    matched = invoices.find((i) => i.status !== "paid");
+    if (matched) matched.status = "paid";
+  } else {
+    matched = invoices.find((i) => i.id === invoiceId || i.invoiceNumber === invoiceId);
   }
-  INITIAL_INVOICES = INITIAL_INVOICES.map((i) =>
-    i.id === invoiceId || i.invoiceNumber === invoiceId ? { ...i, status: "paid" } : i
-  );
-  return INITIAL_INVOICES.find((i) => i.id === invoiceId || i.invoiceNumber === invoiceId);
+
+  if (matched) {
+    const updated = invoices.map((i) => (i.id === matched?.id ? { ...i, status: "paid" as const } : i));
+    writePersistentJSON(INVOICES_FILE, updated);
+    return matched;
+  }
+
+  // Fallback: create a new paid invoice entry if matched is not found
+  const newPaidInv: CAInvoice = {
+    id: invoiceId || `inv-${Date.now()}`,
+    invoiceNumber: invoiceId?.startsWith("INV-") ? invoiceId : `INV-2026-00${invoices.length + 1}`,
+    clientName: "Sunrise Traders Pvt Ltd",
+    clientGstin: "27AABCU9603R1ZM",
+    clientPhone: "+919820198201",
+    date: new Date().toISOString().split("T")[0],
+    dueDate: new Date().toISOString().split("T")[0],
+    items: [{ description: "Professional Fee Payment (SAC 9982)", sacCode: "9982", amount: 15000 }],
+    subtotal: 15000,
+    cgst: 1350,
+    sgst: 1350,
+    igst: 0,
+    totalAmount: 17700,
+    status: "paid",
+    paymentLink: "https://pay.razorpay.com/pl_99821a",
+    upiQrUrl: "upi://pay?pa=sharma.ca@okaxis&pn=SharmaAndAssociates&am=17700&cu=INR",
+  };
+
+  const updated = [newPaidInv, ...invoices];
+  writePersistentJSON(INVOICES_FILE, updated);
+  return newPaidInv;
 }
 
 export function addInvoiceToStore(newInv: CAInvoice) {
-  INITIAL_INVOICES.unshift(newInv);
-  return INITIAL_INVOICES;
+  const invoices = getInvoicesStore();
+  const updated = [newInv, ...invoices];
+  writePersistentJSON(INVOICES_FILE, updated);
+  return updated;
 }

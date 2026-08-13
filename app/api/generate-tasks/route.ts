@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { logAuditEvent } from "@/lib/audit";
 import { ComplianceTask } from "@/app/api/tasks/route";
 import { addTasksToStore } from "@/lib/tasks-store";
+import { calculateStatutoryDueDate } from "@/lib/statutory-calendar";
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,6 +36,16 @@ export async function POST(req: NextRequest) {
           gstin: gstin || "27AABCU9603R1ZM",
           businessType: businessType || "Regular",
         },
+        {
+          clientName: "Metro Electricals",
+          gstin: "27AAACM1234R1ZX",
+          businessType: "Regular",
+        },
+        {
+          clientName: "Patel Exports LLP",
+          gstin: "24AABCP5678R1ZK",
+          businessType: "Composition",
+        },
       ];
     }
 
@@ -44,6 +55,10 @@ export async function POST(req: NextRequest) {
     // Dynamic statutory task generation across real clients
     clientsToProcess.forEach((client, idx) => {
       const isComposition = client.businessType === "Composition";
+      const gstr1DueDate = calculateStatutoryDueDate("GSTR-1", targetPeriod, isComposition);
+      const gstr3bDueDate = calculateStatutoryDueDate("GSTR-3B", targetPeriod, isComposition);
+      const tdsDueDate = calculateStatutoryDueDate("TDS 24Q/26Q", targetPeriod, isComposition);
+
       generatedTasks.push(
         {
           id: `auto-${Date.now()}-${idx}-1`,
@@ -51,7 +66,7 @@ export async function POST(req: NextRequest) {
           gstin: client.gstin,
           taskType: isComposition ? "GSTR-3B" : "GSTR-1",
           period: targetPeriod,
-          dueDate: isComposition ? "18 Apr 2026" : "11 Apr 2026",
+          dueDate: isComposition ? gstr3bDueDate : gstr1DueDate,
           assignedStaff: "Rahul Sharma (Article Clerk)",
           makerChecker: "Rahul (Maker) → CA Sharma (Checker)",
           status: "pending_data",
@@ -63,7 +78,7 @@ export async function POST(req: NextRequest) {
           gstin: client.gstin,
           taskType: "GSTR-3B",
           period: targetPeriod,
-          dueDate: "20 Apr 2026",
+          dueDate: gstr3bDueDate,
           assignedStaff: "Rahul Sharma (Article Clerk)",
           makerChecker: "Rahul (Maker) → CA Sharma (Checker)",
           status: "in_progress",
@@ -75,7 +90,7 @@ export async function POST(req: NextRequest) {
           gstin: client.gstin,
           taskType: "TDS 24Q/26Q",
           period: "Q4 FY 2025-26",
-          dueDate: "31 May 2026",
+          dueDate: tdsDueDate,
           assignedStaff: "Amit Verma (Tax Manager)",
           makerChecker: "Amit (Maker) → CA Sharma (Checker)",
           status: "pending_data",
@@ -84,7 +99,7 @@ export async function POST(req: NextRequest) {
       );
     });
 
-    // Write into live in-memory store
+    // Write into live disk-backed store
     const updatedTasksStore = addTasksToStore(generatedTasks);
 
     let dbPersisted = false;
@@ -115,7 +130,7 @@ export async function POST(req: NextRequest) {
     logAuditEvent({
       actorName: "Intelligent Task Engine",
       actorRole: "partner",
-      action: "Tasks Created in Task OS & Supabase",
+      action: "Tasks Created in Task OS & Disk Store",
       entityType: "task",
       entityId: generatedTasks[0].id,
       details: `Generated and persisted ${generatedTasks.length} statutory tasks into Task OS across ${clientsToProcess.length} client profiles`,

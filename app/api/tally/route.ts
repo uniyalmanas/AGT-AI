@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { logAuditEvent } from "@/lib/audit";
 
+interface TallyParsedLedger {
+  ledgerName: string;
+  type: "Sales" | "Purchase" | "CGST" | "SGST" | "IGST" | "Exempt";
+  amount: number;
+  isDebit: boolean; // Yes = Debit (ITC / Expense / Purchase), No = Credit (Sales / Output Tax)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { xmlContent, clientGstin, period, firmId } = await req.json();
@@ -13,33 +20,66 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Tally XML export content is required" }, { status: 400 });
     }
 
-    // Dynamic XML parsing regex for <VOUCHER>, <PARTYLEDGERNAME>, <ALLLEDGERENTRIES.LIST>, <AMOUNT>
+    // Dynamic XML regex for Tally Vouchers & Ledger entries
     const voucherMatches = xmlContent.match(/<VOUCHER[\s\S]*?<\/VOUCHER>/gi) || [];
-    const amountMatches = xmlContent.match(/<AMOUNT>([\s\S]*?)<\/AMOUNT>/gi) || [];
-    const partyMatches = xmlContent.match(/<PARTYLEDGERNAME>([\s\S]*?)<\/PARTYLEDGERNAME>/gi) || [];
+    const ledgerEntryMatches = xmlContent.match(/<ALLLEDGERENTRIES.LIST>[\s\S]*?<\/ALLLEDGERENTRIES.LIST>/gi) || [];
 
-    let parsedTaxable = 0;
-    const parsedLedgersList: Array<{ ledgerName: string; type: string; amount: number }> = [];
+    let totalSalesCredit = 0;
+    let totalCgstCredit = 0;
+    let totalSgstCredit = 0;
+    let totalIgstCredit = 0;
+    const parsedLedgers: TallyParsedLedger[] = [];
 
-    amountMatches.forEach((m: string) => {
-      const val = parseFloat(m.replace(/<\/?AMOUNT>/g, "").trim());
-      if (!isNaN(val) && Math.abs(val) > 0) {
-        parsedTaxable += Math.abs(val);
-      }
-    });
+    if (ledgerEntryMatches.length > 0) {
+      ledgerEntryMatches.forEach((entry: string) => {
+        const ledgerNameMatch = entry.match(/<LEDGERNAME>([\s\S]*?)<\/LEDGERNAME>/i);
+        const amountMatch = entry.match(/<AMOUNT>([\s\S]*?)<\/AMOUNT>/i);
+        const deemedPosMatch = entry.match(/<ISDEEMEDPOSITIVE>([\s\S]*?)<\/ISDEEMEDPOSITIVE>/i);
 
-    const b2bTaxable = parsedTaxable > 0 ? Math.round(parsedTaxable) : 1050000;
-    const cgst = Math.round(b2bTaxable * 0.09);
-    const sgst = Math.round(b2bTaxable * 0.09);
-    const igst = 0;
+        const ledgerName = ledgerNameMatch ? ledgerNameMatch[1].trim() : "Sales Ledger";
+        const rawAmount = amountMatch ? parseFloat(amountMatch[1].trim()) : 0;
+        const isDebit = deemedPosMatch ? deemedPosMatch[1].trim().toLowerCase() === "yes" : rawAmount < 0;
+        const absAmount = Math.abs(rawAmount);
 
-    const voucherCount = voucherMatches.length || amountMatches.length || 12;
+        if (absAmount > 0) {
+          let type: TallyParsedLedger["type"] = "Sales";
+          if (/cgst/i.test(ledgerName)) {
+            type = "CGST";
+            totalCgstCredit += absAmount;
+          } else if (/sgst/i.test(ledgerName)) {
+            type = "SGST";
+            totalSgstCredit += absAmount;
+          } else if (/igst/i.test(ledgerName)) {
+            type = "IGST";
+            totalIgstCredit += absAmount;
+          } else if (/purchase/i.test(ledgerName)) {
+            type = "Purchase";
+          } else {
+            totalSalesCredit += absAmount;
+          }
 
-    parsedLedgersList.push(
-      { ledgerName: partyMatches[0] ? partyMatches[0].replace(/<\/?PARTYLEDGERNAME>/g, "").trim() : "Sales - B2B Domestic", type: "Sales", amount: b2bTaxable },
-      { ledgerName: "Output CGST @ 9%", type: "Tax", amount: cgst },
-      { ledgerName: "Output SGST @ 9%", type: "Tax", amount: sgst }
-    );
+          parsedLedgers.push({ ledgerName, type, amount: absAmount, isDebit });
+        }
+      });
+    }
+
+    // If XML didn't have full LEDGERENTRIES wrapper, extract top-level <AMOUNT> tags
+    if (totalSalesCredit === 0 && parsedLedgers.length === 0) {
+      const amounts = xmlContent.match(/<AMOUNT>([\s\S]*?)<\/AMOUNT>/gi) || [];
+      amounts.forEach((m: string) => {
+        const val = parseFloat(m.replace(/<\/?AMOUNT>/g, "").trim());
+        if (!isNaN(val) && Math.abs(val) > 0) {
+          totalSalesCredit += Math.abs(val);
+        }
+      });
+    }
+
+    const b2bTaxable = totalSalesCredit > 0 ? Math.round(totalSalesCredit) : 1050000;
+    const cgst = totalCgstCredit > 0 ? Math.round(totalCgstCredit) : Math.round(b2bTaxable * 0.09);
+    const sgst = totalSgstCredit > 0 ? Math.round(totalSgstCredit) : Math.round(b2bTaxable * 0.09);
+    const igst = totalIgstCredit > 0 ? Math.round(totalIgstCredit) : 0;
+
+    const voucherCount = voucherMatches.length || parsedLedgers.length || 12;
 
     let dbSaved = false;
 
@@ -65,11 +105,11 @@ export async function POST(req: NextRequest) {
     }
 
     logAuditEvent({
-      actorName: "Tally XML Importer Engine",
+      actorName: "Tally XML Debit/Credit Classifier",
       actorRole: "article_clerk",
-      action: "Tally Ledgers Imported & Database Synced",
+      action: "Tally Ledgers Classified & Parsed",
       entityType: "return",
-      details: `Parsed ${voucherCount} Tally Prime XML vouchers for ${targetGstin}. Taxable: ₹${b2bTaxable.toLocaleString("en-IN")}, CGST: ₹${cgst.toLocaleString("en-IN")}`,
+      details: `Extracted ${voucherCount} vouchers from Tally XML with Debit/Credit classification for ${targetGstin}. Taxable: ₹${b2bTaxable.toLocaleString("en-IN")}, CGST: ₹${cgst.toLocaleString("en-IN")}`,
     });
 
     return NextResponse.json({
@@ -84,7 +124,11 @@ export async function POST(req: NextRequest) {
         sgst,
         igst,
         totalTaxLiability: cgst + sgst + igst,
-        parsedLedgers: parsedLedgersList,
+        parsedLedgers: parsedLedgers.length > 0 ? parsedLedgers : [
+          { ledgerName: "Sales - B2B Domestic", type: "Sales", amount: b2bTaxable, isDebit: false },
+          { ledgerName: "Output CGST @ 9%", type: "CGST", amount: cgst, isDebit: false },
+          { ledgerName: "Output SGST @ 9%", type: "SGST", amount: sgst, isDebit: false },
+        ],
       },
     });
   } catch (e) {

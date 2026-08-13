@@ -1,3 +1,5 @@
+import { readPersistentJSON, writePersistentJSON } from "@/lib/persistence";
+
 export interface AuditLogItem {
   id: string;
   actorName: string;
@@ -9,7 +11,9 @@ export interface AuditLogItem {
   timestamp: string;
 }
 
-let INITIAL_AUDIT_LOGS: AuditLogItem[] = [
+const AUDIT_FILE = "audit_logs.json";
+
+const DEFAULT_AUDIT_LOGS: AuditLogItem[] = [
   {
     id: "audit-1",
     actorName: "CA Rajesh Sharma",
@@ -32,12 +36,12 @@ let INITIAL_AUDIT_LOGS: AuditLogItem[] = [
   },
   {
     id: "audit-3",
-    actorName: "Razorpay Webhook",
+    actorName: "Razorpay Webhook Engine",
     actorRole: "partner",
     action: "Fee Payment Received",
     entityType: "invoice",
     entityId: "INV-2026-001",
-    details: "Payment of ₹15,000 captured via Razorpay UPI for SAC 9982 Tax Consultation",
+    details: "Payment of ₹17,700 captured via Razorpay UPI for SAC 9982 Tax Consultation",
     timestamp: "2026-08-12 14:15:00",
   },
   {
@@ -53,15 +57,17 @@ let INITIAL_AUDIT_LOGS: AuditLogItem[] = [
 ];
 
 export function getAuditLogs(): AuditLogItem[] {
-  return INITIAL_AUDIT_LOGS;
+  return readPersistentJSON<AuditLogItem[]>(AUDIT_FILE, DEFAULT_AUDIT_LOGS);
 }
 
 export function logAuditEvent(item: Omit<AuditLogItem, "id" | "timestamp">) {
+  const currentLogs = getAuditLogs();
   const newLog: AuditLogItem = {
     ...item,
     id: `audit-${Date.now()}`,
     timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
   };
-  INITIAL_AUDIT_LOGS.unshift(newLog);
+  const updated = [newLog, ...currentLogs];
+  writePersistentJSON(AUDIT_FILE, updated);
   return newLog;
 }

@@ -1,13 +1,16 @@
 import { ComplianceTask } from "@/app/api/tasks/route";
+import { readPersistentJSON, writePersistentJSON } from "@/lib/persistence";
 
-let INITIAL_TASKS: ComplianceTask[] = [
+const TASKS_FILE = "tasks.json";
+
+const DEFAULT_TASKS: ComplianceTask[] = [
   {
     id: "1",
     clientName: "Sunrise Traders Pvt Ltd",
     gstin: "27AABCU9603R1ZM",
     taskType: "GSTR-3B",
     period: "March 2026",
-    dueDate: "20 Jul 2026",
+    dueDate: "20 Apr 2026",
     assignedStaff: "Rahul Sharma (Article Clerk)",
     makerChecker: "Rahul (Maker) → CA Sharma (Checker)",
     status: "review",
@@ -19,7 +22,7 @@ let INITIAL_TASKS: ComplianceTask[] = [
     gstin: "27AAACM1234R1ZX",
     taskType: "GSTR-1",
     period: "March 2026",
-    dueDate: "11 Jul 2026",
+    dueDate: "11 Apr 2026",
     assignedStaff: "Priya Patel (Senior Assistant)",
     makerChecker: "Priya (Maker) → CA Sharma (Checker)",
     status: "in_progress",
@@ -64,15 +67,19 @@ let INITIAL_TASKS: ComplianceTask[] = [
 ];
 
 export function getTasksStore(): ComplianceTask[] {
-  return INITIAL_TASKS;
+  return readPersistentJSON<ComplianceTask[]>(TASKS_FILE, DEFAULT_TASKS);
 }
 
 export function updateTaskStatusInStore(taskId: string, newStatus: ComplianceTask["status"]) {
-  INITIAL_TASKS = INITIAL_TASKS.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t));
-  return INITIAL_TASKS;
+  const tasks = getTasksStore();
+  const updated = tasks.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t));
+  writePersistentJSON(TASKS_FILE, updated);
+  return updated;
 }
 
 export function addTasksToStore(newTasks: ComplianceTask[]) {
-  INITIAL_TASKS = [...newTasks, ...INITIAL_TASKS];
-  return INITIAL_TASKS;
+  const tasks = getTasksStore();
+  const updated = [...newTasks, ...tasks];
+  writePersistentJSON(TASKS_FILE, updated);
+  return updated;
 }
