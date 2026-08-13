@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthContext } from "@/lib/supabase/auth";
 import { getTasksStore, updateTaskStatusInStore, addTasksToStore } from "@/lib/tasks-store";
 import { addInvoiceToStore, getInvoicesStore } from "@/lib/billing-store";
 import { logAuditEvent } from "@/lib/audit";
@@ -17,11 +18,36 @@ export interface ComplianceTask {
 }
 
 export async function GET() {
+  const ctx = await getAuthContext();
+  if (ctx) {
+    const { data } = await ctx.supabase
+      .from("tasks")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      const formattedTasks: ComplianceTask[] = data.map((t: any) => ({
+        id: t.id,
+        clientName: t.client_name,
+        gstin: t.gstin,
+        taskType: t.task_type,
+        period: t.period,
+        dueDate: t.due_date,
+        assignedStaff: t.assigned_staff,
+        makerChecker: t.maker_checker,
+        status: t.status,
+        urgent: t.urgent,
+      }));
+      return NextResponse.json({ tasks: formattedTasks });
+    }
+  }
+
   return NextResponse.json({ tasks: getTasksStore() });
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const ctx = await getAuthContext();
     const body = await req.json();
 
     if (body.action === "updateStatus") {
@@ -29,6 +55,10 @@ export async function POST(req: NextRequest) {
       const tasksBefore = getTasksStore();
       const targetTask = tasksBefore.find((t) => t.id === taskId);
       const updated = updateTaskStatusInStore(taskId, newStatus);
+
+      if (ctx) {
+        await ctx.supabase.from("tasks").update({ status: newStatus }).eq("id", taskId);
+      }
 
       // WORK TO BILLING CLOSED-LOOP: If status changed to "filed", generate SAC 9982 invoice
       if (newStatus === "filed" && targetTask) {
@@ -83,6 +113,22 @@ export async function POST(req: NextRequest) {
         status: "pending_data",
         urgent: false,
       };
+
+      if (ctx) {
+        await ctx.supabase.from("tasks").insert({
+          firm_id: ctx.firmId,
+          client_name: newTask.clientName,
+          gstin: newTask.gstin,
+          task_type: newTask.taskType,
+          period: newTask.period,
+          due_date: newTask.dueDate,
+          assigned_staff: newTask.assignedStaff,
+          maker_checker: newTask.makerChecker,
+          status: newTask.status,
+          urgent: newTask.urgent,
+        });
+      }
+
       const updated = addTasksToStore([newTask]);
       return NextResponse.json({ ok: true, tasks: updated });
     }
