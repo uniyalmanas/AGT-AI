@@ -6,10 +6,11 @@ import Link from "next/link";
 import { ComplianceTask } from "@/app/api/tasks/route";
 import { LitigationNotice } from "@/app/api/litigation/route";
 import { CAInvoice } from "@/app/api/billing/route";
+import { createClient } from "@/lib/supabase/client";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("CA Sharma");
+  const [userName, setUserName] = useState("CA Partner");
   const [greeting, setGreeting] = useState("Good morning");
 
   const [stats, setStats] = useState({
@@ -24,22 +25,33 @@ export default function DashboardPage() {
   const [activeNotices, setActiveNotices] = useState<LitigationNotice[]>([]);
 
   useEffect(() => {
-    // Dynamic greeting based on current time
+    // Dynamic greeting based on current local hour
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
     else if (hour < 17) setGreeting("Good afternoon");
     else setGreeting("Good evening");
 
-    // Fetch active user/partner name dynamically
-    fetch("/api/team")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.members && d.members.length > 0) {
-          const partner = d.members.find((m: any) => m.role === "partner") || d.members[0];
-          if (partner?.name) setUserName(partner.name);
+    // Fetch real logged-in user profile from Supabase Auth
+    try {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user) {
+          const metaName = data.user.user_metadata?.full_name || data.user.user_metadata?.name;
+          if (metaName) {
+            setUserName(metaName.startsWith("CA") ? metaName : `CA ${metaName}`);
+            return;
+          }
+          if (data.user.email) {
+            const emailPrefix = data.user.email.split("@")[0];
+            const formattedName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+            setUserName(`CA ${formattedName}`);
+            return;
+          }
         }
-      })
-      .catch(() => {});
+      });
+    } catch (e) {
+      console.error("Auth user query error:", e);
+    }
 
     fetchDashboardData();
   }, []);
