@@ -95,13 +95,10 @@ export default function Sidebar() {
           <LogOut size={16} />
           <span>Sign out</span>
         </button>
-        <div className="mt-3 px-3 py-3 rounded-xl bg-brand-50 border border-brand-100">
-          <div className="text-xs font-semibold text-brand-700 mb-0.5">Pro Plan</div>
-          <div className="text-[11px] text-brand-500">100 GSTINs · ₹2,999/mo</div>
-          <div className="mt-2 w-full bg-brand-100 rounded-full h-1">
-            <div className="bg-brand-500 h-1 rounded-full" style={{ width: "42%" }} />
-          </div>
-          <div className="text-[10px] text-brand-400 mt-1">42 / 100 GSTINs used</div>
+        <div className="mt-3 px-3 py-3 rounded-xl bg-emerald-50 border border-emerald-200">
+          <div className="text-xs font-semibold text-emerald-800 mb-0.5">🎁 Pilot Partner Pass</div>
+          <div className="text-[11px] font-medium text-emerald-700">Full CA OS Unlocked · 100% Free</div>
+          <div className="text-[10px] text-emerald-600 mt-1">Zero payment required for early CA pilots</div>
         </div>
       </div>
     </div>
