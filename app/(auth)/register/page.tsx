@@ -15,6 +15,7 @@ export default function RegisterPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   function update(key: keyof typeof form) {
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccessMsg("");
     setLoading(true);
 
     try {
@@ -44,10 +46,16 @@ export default function RegisterPage() {
       // 2. Attempt client-side sign in
       try {
         const supabase = createClient();
-        await supabase.auth.signInWithPassword({
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
+
+        if (signInErr && signInErr.message.toLowerCase().includes("email not confirmed")) {
+          setSuccessMsg("Firm account created! Email confirmation is enabled in your Supabase project.");
+          setLoading(false);
+          return;
+        }
       } catch (e) {
         console.warn("Client Supabase auth fallback:", e);
       }
@@ -98,9 +106,24 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <button type="submit" className="btn-primary w-full justify-center" disabled={loading}>
-          {loading ? <span className="spinner" /> : "Create account"}
-        </button>
+        {successMsg && (
+          <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl p-3 space-y-2">
+            <p className="font-semibold">{successMsg}</p>
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="w-full btn-primary text-xs py-2 justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              🎁 Launch CA-OS Workspace (Pilot Pass) →
+            </button>
+          </div>
+        )}
+
+        {!successMsg && (
+          <button type="submit" className="btn-primary w-full justify-center" disabled={loading}>
+            {loading ? <span className="spinner" /> : "Create account"}
+          </button>
+        )}
       </form>
 
       <p className="text-xs text-ink-300 text-center mt-5">

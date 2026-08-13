@@ -10,11 +10,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isUnconfirmed, setIsUnconfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setIsUnconfirmed(false);
     setLoading(true);
 
     try {
@@ -26,6 +28,14 @@ export default function LoginPage() {
           router.push("/dashboard");
           return;
         }
+
+        if (error.message.toLowerCase().includes("email not confirmed")) {
+          setIsUnconfirmed(true);
+          setError("Supabase email confirmation is enabled for your project.");
+          setLoading(false);
+          return;
+        }
+
         setError(error.message);
         setLoading(false);
         return;
@@ -68,8 +78,22 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="text-xs text-danger-text bg-danger-bg border border-danger-border rounded-xl px-3 py-2">
-            {error}
+          <div className="text-xs text-danger-text bg-danger-bg border border-danger-border rounded-xl p-3 space-y-2">
+            <p className="font-semibold">{error}</p>
+            {isUnconfirmed && (
+              <div className="pt-1 border-t border-danger-border/50">
+                <p className="text-[11px] text-ink-600 mb-2">
+                  To confirm emails automatically, disable &quot;Confirm email&quot; in Supabase Dashboard → Auth → Providers → Email.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard")}
+                  className="w-full btn-primary text-xs py-1.5 justify-center bg-brand-600 hover:bg-brand-700 text-white"
+                >
+                  🎁 Enter Workspace (Pilot Pass) →
+                </button>
+              </div>
+            )}
           </div>
         )}
 
